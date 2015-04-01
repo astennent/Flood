@@ -10,7 +10,7 @@ class Board extends MonoBehaviour {
    var m_size : int;
 
    function Start () {
-      Generate(10);
+      Generate(15);
    }
 
    // Returns true if this tile is surrounded by flooded neighbors.
@@ -88,12 +88,12 @@ class Board extends MonoBehaviour {
             var tile : Tile = Tile.Instantiate(Prefabs.getTilePrefab(), transform.position, transform.rotation);
             tile.Initialize(this, x, y);
 
-            var adjust = size/2-.5f;
+            tile.transform.localScale /= size;
+            var adjust = size/2;
             var xPosition = x - adjust;
             var yPosition = y - adjust;
-            tile.transform.position += Vector3.right * (xPosition);
-            tile.transform.position += -Vector3.up * (yPosition);
-            tile.transform.localScale /= size;
+            tile.transform.position += Vector3.right * (xPosition) / size * 10;
+            tile.transform.position += -Vector3.up * (yPosition) / size * 10;
             tileRow.Add(tile);
          }
          m_tiles.Add(tileRow);
