@@ -78,8 +78,20 @@ class Board extends MonoBehaviour {
       }
 
       var origin = new Vector2(clickedTile.x(), clickedTile.y());
+      var minDelay = 100000.0; // big number.
       for (var tile in m_floodedTiles) {
-         tile.setColor(targetColor, origin);
+         var tileDelay = tile.setColor(targetColor, origin);
+         if (tileDelay < minDelay) {
+            minDelay = tileDelay;
+         }
+      }
+
+      // Ensure that no matter where you click, animation will begin immediately. Not doing this
+      // makes it look like the game is lagging when you click far away from flooded tiles.
+      if (minDelay > 0) {
+         for (var tile in m_floodedTiles) {
+            tile.decreaseAnimationDelay(minDelay);
+         }
       }
    }
 

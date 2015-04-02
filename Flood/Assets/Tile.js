@@ -63,6 +63,12 @@ class Tile extends MonoBehaviour {
       }
    }
 
+   public function decreaseAnimationDelay(delay : float) {
+      directionChangeTime -= delay;
+      flipStartTime -= delay;
+   }
+
+   // Returns the time offset so that the board can avoid delay when clicking far away.
    public function setColor(colorIndex : int, clickOrigin : Vector2) {
       transform.rotation = desiredRotation;
       transform.position.z = 0;
@@ -75,9 +81,9 @@ class Tile extends MonoBehaviour {
 
       m_back.GetComponent.<Renderer>().material.color = colors[colorIndex];
 
-      var animationTime = Vector2.Distance(gridPosition, clickOrigin)/30.0;
-      directionChangeTime = Time.time + animationTime;
-      flipStartTime = Time.time + animationTime;
+      var animationDelay = Vector2.Distance(gridPosition, clickOrigin)/30.0;
+      directionChangeTime = Time.time + animationDelay;
+      flipStartTime = Time.time + animationDelay;
 
       // Swap
       var temp = m_front;
@@ -91,6 +97,8 @@ class Tile extends MonoBehaviour {
       } else {
          m_colorIndex = colorIndex;
       }
+
+      return animationDelay;
    }
 
    public function getColor() {
