@@ -39,5 +39,12 @@ function ZoomToPoints(point1 : Vector3, point2 : Vector3, precision : float) {
          closePoint = midPoint;
       }
    }
-   
+
+}
+
+// This doesn't really go on the camera, but I don't want to make a GameController.
+function Update() {
+   if (Input.GetKeyDown(KeyCode.Escape)) { 
+      Application.Quit();
+   }
 }

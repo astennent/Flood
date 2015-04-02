@@ -39,12 +39,23 @@ class Tile extends MonoBehaviour {
       setColor((Random.Range(0, 1.0) * numColors), Vector2.zero);
    }
 
+
+   // The "set position" operation is a relatively expensive operation compared to get position,
+   // So we perform a check that will only update position if necessary.
+   private function setZ(z : float) {
+      if (Mathf.Abs(transform.position.z - z) > .01) {
+         transform.position.z = z;
+      }
+   }
+
    function UpdateFlipPosition() {
+
+
       if (Time.time - directionChangeTime > .25) {
-         transform.position.z = Mathf.Lerp(transform.position.z, 0, .3);
+         setZ(Mathf.Lerp(transform.position.z, 0, .3));
       } 
       else if (Time.time - directionChangeTime > 0) { 
-         transform.position.z = Mathf.Lerp(transform.position.z, -1, .3);
+         setZ(Mathf.Lerp(transform.position.z, -1, .3));
       }
 
       if (Time.time - flipStartTime > 0) {
