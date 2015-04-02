@@ -90,6 +90,7 @@ class Board extends MonoBehaviour {
 
             tile.transform.localScale /= size;
             var adjust = size/2;
+
             var xPosition = x - adjust;
             var yPosition = y - adjust;
             tile.transform.position += Vector3.right * (xPosition) / size * 10;
