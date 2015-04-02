@@ -4,8 +4,8 @@ var myCamera : Camera;
 
 function Start () {
    myCamera = GetComponent.<Camera>();
-   var p1 = new Vector3(-5.5, -5.5, 0);
-   var p2 = new Vector3(5.5, 5.5, 0);
+   var p1 = new Vector3(-7, -5.5, 0);
+   var p2 = new Vector3(7, 5.5, 0);
 
    var precision = 0.01;
    ZoomToPoints(p1, p2, precision);

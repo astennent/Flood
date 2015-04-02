@@ -7,10 +7,24 @@ class Board extends MonoBehaviour {
    var m_tiles = new List.<List.<Tile> >();
    var m_borderTiles = new HashSet.<Tile>();
    var m_floodedTiles = new HashSet.<Tile>();
-   var m_size : int;
+
+   private var m_size : int;
+   private var m_numColors : int;
+
+   function SetSize(size : int) {
+      m_size = size;
+      Regenerate();
+   }
+
+   function SetNumColors(numColors : int) {
+      m_numColors = numColors;
+      Regenerate();
+   }
 
    function Start () {
-      Generate(15);
+      m_size = 15;
+      m_numColors = 5;
+      Regenerate();
    }
 
    // Returns true if this tile is surrounded by flooded neighbors.
@@ -53,7 +67,7 @@ class Board extends MonoBehaviour {
 
    function ProcessClick(clickedTile : Tile) {
       if (m_borderTiles.Count == 0) {
-         Generate(m_size);
+         Regenerate();
          return;
       }
 
@@ -69,32 +83,34 @@ class Board extends MonoBehaviour {
       }
    }
 
-   function Generate(size : int) {
-      m_size = size;
-
+   function Regenerate() {
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
-            Destroy(tile.gameObject);
+            GameObject.Destroy(tile.gameObject);
          }
       }
+
+      // Destroy() does actually remove objects from memory. In order to remove objects from memory
+      // and not just the Engine's scene, you need to call this function.
+      Resources.UnloadUnusedAssets();
 
       m_tiles.Clear();
       m_borderTiles.Clear();
       m_floodedTiles.Clear();
 
-      for (var y = 0 ; y < size ; y++) {
+      for (var y = 0 ; y < m_size ; y++) {
          var tileRow = new List.<Tile>();
-         for (var x = 0 ; x < size ; x++) {
+         for (var x = 0 ; x < m_size ; x++) {
             var tile : Tile = Tile.Instantiate(Prefabs.getTilePrefab(), transform.position, transform.rotation);
-            tile.Initialize(this, x, y);
+            tile.Initialize(this, x, y, m_numColors);
 
-            tile.transform.localScale /= size;
-            var adjust = size/2;
+            tile.transform.localScale /= m_size;
+            var adjust = m_size/2;
 
             var xPosition = x - adjust;
             var yPosition = y - adjust;
-            tile.transform.position += Vector3.right * (xPosition) / size * 10;
-            tile.transform.position += -Vector3.up * (yPosition) / size * 10;
+            tile.transform.position += Vector3.right * (xPosition) / m_size * 10;
+            tile.transform.position += -Vector3.up * (yPosition) / m_size * 10;
             tileRow.Add(tile);
          }
          m_tiles.Add(tileRow);

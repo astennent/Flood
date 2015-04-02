@@ -9,7 +9,9 @@ class Tile extends MonoBehaviour {
       Color.green,
       Color.blue,
       Color.yellow,
-      Color.cyan
+      Color.cyan,
+      Color.magenta,
+      new Color(1, .4, 0) //orange
    ];
 
    private var desiredRotation : Quaternion;
@@ -30,11 +32,11 @@ class Tile extends MonoBehaviour {
      UpdateFlipPosition();
 	}
 
-   public function Initialize(board : Board, x : int, y : int) {
+   public function Initialize(board : Board, x : int, y : int, numColors : int) {
       m_board = board;
       gridPosition = new Vector2(x,y);
       desiredRotation = transform.rotation;
-      setColor((Random.Range(0, 1.0) * colors.Length), Vector2.zero);
+      setColor((Random.Range(0, 1.0) * numColors), Vector2.zero);
    }
 
    function UpdateFlipPosition() {
