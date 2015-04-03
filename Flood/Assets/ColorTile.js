@@ -1,8 +1,8 @@
 ﻿#pragma strict
 
 var board : Board;
-var numColors : int;
+var colorIndex : int;
 
 function OnMouseDown() {
-   board.SetNumColors(numColors);
+   board.ProcessClick(colorIndex);
 }

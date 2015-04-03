@@ -43,7 +43,7 @@ class Tile extends MonoBehaviour {
    // The "set position" operation is a relatively expensive operation compared to get position,
    // So we perform a check that will only update position if necessary.
    private function setZ(z : float) {
-      if (Mathf.Abs(transform.position.z - z) > .01) {
+      if (Mathf.Abs(transform.position.z - z) > .005) {
          transform.position.z = z;
       }
    }

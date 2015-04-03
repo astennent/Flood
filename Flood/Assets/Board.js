@@ -8,6 +8,8 @@ class Board extends MonoBehaviour {
    var m_borderTiles = new HashSet.<Tile>();
    var m_floodedTiles = new HashSet.<Tile>();
 
+   public var scrollbarThumb : ScrollThumb;
+
    private var m_size : int;
    private var m_numColors : int;
 
@@ -19,6 +21,8 @@ class Board extends MonoBehaviour {
    function SetNumColors(numColors : int) {
       m_numColors = numColors;
       Regenerate();
+      
+      scrollbarThumb.setNumColors(numColors);
    }
 
    function Start () {
@@ -65,19 +69,26 @@ class Board extends MonoBehaviour {
       return false;
    }
 
+   function ProcessClick(targetColor : int) {
+      ProcessClick(0, 0, targetColor);
+   }
+
    function ProcessClick(clickedTile : Tile) {
+      ProcessClick(clickedTile.x(), clickedTile.y(), clickedTile.getColor());
+   }
+
+   function ProcessClick(tileX : int, tileY : int, targetColor : int) {
       if (m_borderTiles.Count == 0) {
          Regenerate();
          return;
       }
 
-      var targetColor = clickedTile.getColor();
       var oldBorderTiles = new List.<Tile>(m_borderTiles);
       for (var tile in oldBorderTiles) {
          floodFrom(tile, targetColor);
       }
 
-      var origin = new Vector2(clickedTile.x(), clickedTile.y());
+      var origin = new Vector2(tileX, tileY);
       var minDelay = 100000.0; // big number.
       for (var tile in m_floodedTiles) {
          var tileDelay = tile.setColor(targetColor, origin);
