@@ -42,23 +42,24 @@ class Tile extends MonoBehaviour {
 
    // The "set position" operation is a relatively expensive operation compared to get position,
    // So we perform a check that will only update position if necessary.
-   private function setZ(z : float) {
+   private function approachZ(z : float) {
       if (Mathf.Abs(transform.position.z - z) > .005) {
-         transform.position.z = z;
+         transform.position.z = Mathf.Lerp(transform.position.z, z, .3);
       }
    }
 
    function UpdateFlipPosition() {
 
-
       if (Time.time - directionChangeTime > .25) {
-         setZ(Mathf.Lerp(transform.position.z, 0, .3));
+         approachZ(0);
       } 
       else if (Time.time - directionChangeTime > 0) { 
-         setZ(Mathf.Lerp(transform.position.z, -1, .3));
+         approachZ(-1);
       }
 
-      if (Time.time - flipStartTime > 0) {
+      // "set rotation" requires a similar optimization as approachZ.
+      if (Time.time - flipStartTime > 0 && 
+            Quaternion.Angle(transform.rotation, desiredRotation) > .1) { 
          transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, .2);
       }
    }
