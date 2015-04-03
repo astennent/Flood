@@ -20,7 +20,6 @@ class Tile extends MonoBehaviour {
    var m_board : Board;
    private var gridPosition : Vector2;
 
-   var directionChangeTime : float = 0;
    var flipStartTime : float = 0;
 
    function OnMouseDown() {
@@ -50,22 +49,22 @@ class Tile extends MonoBehaviour {
 
    function UpdateFlipPosition() {
 
-      if (Time.time - directionChangeTime > .25) {
+      var elapsedTime = Time.time - flipStartTime;
+      if (elapsedTime > .25) {
          approachZ(0);
       } 
-      else if (Time.time - directionChangeTime > 0) { 
+      else if (elapsedTime > 0) { 
          approachZ(-1);
       }
 
       // "set rotation" requires a similar optimization as approachZ.
-      if (Time.time - flipStartTime > 0 && 
+      if (elapsedTime > 0 && 
             Quaternion.Angle(transform.rotation, desiredRotation) > .1) { 
-         transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, .2);
+         transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, elapsedTime*1.5);
       }
    }
 
    public function decreaseAnimationDelay(delay : float) {
-      directionChangeTime -= delay;
       flipStartTime -= delay;
    }
 
@@ -83,7 +82,6 @@ class Tile extends MonoBehaviour {
       m_back.GetComponent.<Renderer>().material.color = colors[colorIndex];
 
       var animationDelay = Vector2.Distance(gridPosition, clickOrigin)/30.0;
-      directionChangeTime = Time.time + animationDelay;
       flipStartTime = Time.time + animationDelay;
 
       // Swap
