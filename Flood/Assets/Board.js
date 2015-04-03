@@ -9,6 +9,7 @@ class Board extends MonoBehaviour {
    var m_floodedTiles = new HashSet.<Tile>();
 
    public var scrollbarThumb : ScrollThumb;
+   public var colorTiles : List.<ColorTile>;
 
    private var m_size : int;
    private var m_numColors : int;
@@ -21,8 +22,12 @@ class Board extends MonoBehaviour {
    function SetNumColors(numColors : int) {
       m_numColors = numColors;
       Regenerate();
-      
+
       scrollbarThumb.setNumColors(numColors);
+      for (colorTile in colorTiles) {
+         var shouldEnable = (colorTile.colorIndex < numColors);
+         colorTile.SetEnabled(shouldEnable);
+      }
    }
 
    function Start () {
