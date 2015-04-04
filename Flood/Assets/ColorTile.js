@@ -2,10 +2,12 @@
 
 var board : Board;
 var colorIndex : int;
+var defaultMaterial : Material;
 
 private var m_enabled : boolean;
 
 function Start() {
+   defaultMaterial = GetComponent.<Renderer>().material;
    SetEnabled(colorIndex <= 4);
 }
 
@@ -17,10 +19,8 @@ function OnMouseDown() {
 function SetEnabled(enabled : boolean) {
    m_enabled = enabled;
    if (enabled) {
-      var color = ColorController.colors[colorIndex];
-      color.a = .1;
+      GetComponent.<Renderer>().material = ColorController.colorMaterials[colorIndex];
    } else {
-      color = new Color(.2, .2, .2, .1);
+      GetComponent.<Renderer>().material = defaultMaterial;
    }
-   GetComponent.<Renderer>().material.SetColor("_TintColor", color);
 }

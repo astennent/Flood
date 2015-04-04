@@ -37,7 +37,7 @@ class Tile extends MonoBehaviour {
 
          // "set rotation" benefits from a similar optimization as position.
          if (m_back.enabled) {
-            if (Quaternion.Angle(transform.rotation, desiredRotation) > .01) { 
+            if (Quaternion.Angle(transform.rotation, desiredRotation) > .005) { 
                transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, elapsedTime*1.5);
             } else {
                m_back.enabled = false;
