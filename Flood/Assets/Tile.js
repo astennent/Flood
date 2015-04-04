@@ -4,16 +4,6 @@ class Tile extends MonoBehaviour {
    public var m_front : Renderer;
    public var m_back : Renderer;
 
-   public static var colors = [
-      Color.red,
-      Color.green,
-      Color.blue,
-      Color.yellow,
-      Color.cyan,
-      Color.magenta,
-      new Color(1, .4, 0) //orange
-   ];
-
    private var desiredRotation : Quaternion;
    var m_colorIndex : int = -1;
 
@@ -76,8 +66,8 @@ class Tile extends MonoBehaviour {
       desiredRotation = transform.rotation;
       transform.Rotate(Vector3.forward, 180);
 
-
-      m_back.material.color = colors[colorIndex];
+      m_back.material = ColorController.colorMaterials[colorIndex];
+      //m_back.material.SetColor("_Color", colors[colorIndex]);
 
       var animationDelay = Vector2.Distance(gridPosition, clickOrigin)/30.0;
       flipStartTime = Time.time + animationDelay;

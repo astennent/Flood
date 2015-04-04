@@ -17,7 +17,7 @@ function OnMouseDown() {
 function SetEnabled(enabled : boolean) {
    m_enabled = enabled;
    if (enabled) {
-      var color = Tile.colors[colorIndex];
+      var color = ColorController.colors[colorIndex];
       color.a = .1;
    } else {
       color = new Color(.2, .2, .2, .1);
