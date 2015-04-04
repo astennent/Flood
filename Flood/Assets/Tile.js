@@ -11,11 +11,7 @@ class Tile extends MonoBehaviour {
    private var gridPosition : Vector2;
 
    var flipStartTime : float = 0;
-
-   function OnMouseDown() {
-      m_board.ProcessClick(this);
-   }
-   
+  
    // Update is called once per frame
    function Update () {
      UpdateFlipPosition();

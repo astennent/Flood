@@ -18,6 +18,9 @@ class Board extends MonoBehaviour {
       m_size = size;
       Regenerate();
    }
+   function GetSize() {
+      return m_size;
+   }
 
    function SetNumColors(numColors : int) {
       m_numColors = numColors;
@@ -74,12 +77,12 @@ class Board extends MonoBehaviour {
       return false;
    }
 
+   function ProcessClick(tileX : int, tileY : int) {
+      ProcessClick(tileX, tileY, m_tiles[tileY][tileX].getColor());
+   } 
+
    function ProcessClick(targetColor : int) {
       ProcessClick(0, 0, targetColor);
-   }
-
-   function ProcessClick(clickedTile : Tile) {
-      ProcessClick(clickedTile.x(), clickedTile.y(), clickedTile.getColor());
    }
 
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
