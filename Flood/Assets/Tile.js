@@ -24,24 +24,38 @@ class Tile extends MonoBehaviour {
       setColor((Random.Range(0, 1.0) * numColors), Vector2.zero);
    }
 
+   private function updateZ(elapsedTime : float) {
+      // The "set position" operation is relatively expensive compared to get position,
+      // So we perform a check that will only update position if necessary.
+      var desiredZ = (elapsedTime > .25) ? 0 : -1;
+      var currentZ = transform.position.z;
+      if (desiredZ == currentZ) {
+         return;
+      }
+
+      if (Mathf.Abs(currentZ - desiredZ) < .1) {
+         transform.position.z = desiredZ;
+      } else {
+         transform.position.z = Mathf.Lerp(currentZ, desiredZ, elapsedTime*1.2);
+      } 
+   }
+
+   private function updateRotation(elapsedTime : float) {
+      // "set rotation" benefits from a similar optimization as position.
+      if (Quaternion.Angle(transform.rotation, desiredRotation) > .01) { 
+         transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, elapsedTime*1.5);
+      } else {
+         transform.rotation = desiredRotation;
+         m_back.enabled = false;
+      }
+   }
+
    function UpdateFlipPosition() {
       var elapsedTime = Time.time - flipStartTime;
       if (elapsedTime > 0) {
-
-         // The "set position" operation is relatively expensive compared to get position,
-         // So we perform a check that will only update position if necessary.
-         var desiredZ = (elapsedTime > .25) ? 0 : -1;
-         if (Mathf.Abs(transform.position.z - desiredZ) > .001) {
-            transform.position.z = Mathf.Lerp(transform.position.z, desiredZ, elapsedTime*1.2);
-         }
-
-         // "set rotation" benefits from a similar optimization as position.
+         updateZ(elapsedTime);
          if (m_back.enabled) {
-            if (Quaternion.Angle(transform.rotation, desiredRotation) > .005) { 
-               transform.rotation = Quaternion.Lerp(transform.rotation, desiredRotation, elapsedTime*1.5);
-            } else {
-               m_back.enabled = false;
-            }
+            updateRotation(elapsedTime);
          }
       }
    }
