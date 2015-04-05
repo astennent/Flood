@@ -10,6 +10,7 @@ class Board extends MonoBehaviour {
 
    public var scrollbarThumb : ScrollThumb;
    public var colorTiles : List.<ColorTile>;
+   private var scoreController : ScoreController;
 
    private var m_size : int;
    private var m_numColors : int;
@@ -32,10 +33,14 @@ class Board extends MonoBehaviour {
          colorTile.SetEnabled(shouldEnable);
       }
    }
+   function GetNumColors() {
+      return m_numColors;
+   }
 
    function Start () {
       m_size = 15;
       m_numColors = 5;
+      scoreController = GetComponent.<ScoreController>();
       Regenerate();
    }
 
@@ -86,14 +91,21 @@ class Board extends MonoBehaviour {
    }
 
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
+
+      // Reset the game.
       if (m_borderTiles.Count == 0) {
          Regenerate();
          return;
       }
 
+      var oldFloodedCount = m_floodedTiles.Count;
       var oldBorderTiles = new List.<Tile>(m_borderTiles);
       for (var tile in oldBorderTiles) {
          floodFrom(tile, targetColor);
+      }
+
+      if (m_floodedTiles.Count > oldFloodedCount) {
+         scoreController.Increment();
       }
 
       var origin = new Vector2(tileX, tileY);
@@ -111,6 +123,10 @@ class Board extends MonoBehaviour {
          for (var tile in m_floodedTiles) {
             tile.decreaseAnimationDelay(minDelay);
          }
+      }
+
+      if (m_borderTiles.Count == 0) {
+         scoreController.Finish();
       }
    }
 
@@ -151,5 +167,7 @@ class Board extends MonoBehaviour {
       m_floodedTiles.Add(firstTile);
       m_borderTiles.Add(firstTile);
       floodFrom(firstTile, firstTile.getColor());
+
+      scoreController.Reset();
    }
 }
