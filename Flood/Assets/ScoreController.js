@@ -8,6 +8,10 @@ public var currentText : TextMesh;
 
 private static var DEFAULT_BEST = 99999;
 
+function GetCurrentMoves() {
+   return m_currentMoves;
+}
+
 function Reset() {
    m_currentMoves = 0;
    UpdateBestText();

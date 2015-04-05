@@ -15,15 +15,26 @@ class Board extends MonoBehaviour {
    private var m_size : int;
    private var m_numColors : int;
 
+   private var m_promptEnabled = false;
+   private var m_promptCallback : Function;
+   private var m_promptCallbackParam : int;
+
+   public var m_guiSkin : GUISkin;
+
    function SetSize(size : int) {
+      Prompt(SetSizeSkipPrompt, size);      
+   }
+   function SetSizeSkipPrompt(size : int) {
       m_size = size;
       Regenerate();
    }
    function GetSize() {
       return m_size;
    }
-
    function SetNumColors(numColors : int) {
+      Prompt(SetNumColorsSkipPrompt, numColors);
+   }
+   function SetNumColorsSkipPrompt(numColors : int) {
       m_numColors = numColors;
       Regenerate();
 
@@ -35,6 +46,58 @@ class Board extends MonoBehaviour {
    }
    function GetNumColors() {
       return m_numColors;
+   }
+
+   function Prompt(callbackFunction : Function, param : int) {
+
+      // If they just started or finished the game, don't prompt.
+      if (!HasGameStarted() || HasGameEnded()) {
+         callbackFunction(param);
+         return;
+      }
+
+      m_promptCallback = callbackFunction;
+      m_promptCallbackParam = param;
+      m_promptEnabled = true;
+   }
+
+   function OnGUI() {
+
+      if (!m_promptEnabled) {
+         return;
+      }
+
+      GUI.skin = m_guiSkin;
+
+      // Draw background box.
+      var width = Screen.width/2;
+      var height = Screen.height/2;
+      var boxLeft = width/2;
+      var boxTop = height/2;
+      var backgroundRect = new Rect(boxLeft, boxTop, width, height);
+      GUI.Box(backgroundRect, "");
+
+      // Draw buttons
+      var buttonPadding = width/12;
+      var buttonHeight = height/4;
+      var buttonWidth = width * 3.0 / 8.0;
+      var buttonTop = boxTop + height - buttonHeight - buttonPadding;
+      var buttonRect = new Rect(boxLeft + buttonPadding, buttonTop, buttonWidth, buttonHeight);
+      if (GUI.Button(buttonRect, "Continue") ) {
+         m_promptEnabled = false;
+         m_promptCallback(m_promptCallbackParam);
+      }
+
+      buttonRect.x += buttonWidth + buttonPadding;
+      if (GUI.Button(buttonRect, "Cancel") ) {
+         m_promptEnabled = false;
+      }
+
+      var textWidth = width - 2*buttonPadding;
+      var textHeight = buttonTop - boxTop - buttonPadding;
+      var textRect = new Rect(boxLeft + buttonPadding, boxTop + buttonPadding, textWidth, textHeight);
+      GUI.color = new Color(.1, .1, .1);
+      GUI.Label(textRect, "This will reset the board and you will lose your progress. Continue?");
    }
 
    function Start () {
@@ -93,7 +156,7 @@ class Board extends MonoBehaviour {
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
 
       // Reset the game.
-      if (m_borderTiles.Count == 0) {
+      if (HasGameEnded()) {
          Regenerate();
          return;
       }
@@ -125,7 +188,7 @@ class Board extends MonoBehaviour {
          }
       }
 
-      if (m_borderTiles.Count == 0) {
+      if (HasGameEnded()) {
          scoreController.Finish();
       }
    }
@@ -169,5 +232,13 @@ class Board extends MonoBehaviour {
       floodFrom(firstTile, firstTile.getColor());
 
       scoreController.Reset();
+   }
+
+   function HasGameStarted() {
+      return (scoreController.GetCurrentMoves() > 0);
+   }
+
+   function HasGameEnded() {
+      return (m_borderTiles.Count == 0);
    }
 }

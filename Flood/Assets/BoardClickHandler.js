@@ -19,7 +19,5 @@ function OnMouseDown() {
    var tileX = (position.x + 5) * size / 10.0;
    var tileY = (position.y + 5) * size / 10.0;
 
-   Debug.Log(tileX + " " + tileY);
-
    m_board.ProcessClick(tileX, tileY);
 }
