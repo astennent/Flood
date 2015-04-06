@@ -17,7 +17,17 @@ class Tile extends MonoBehaviour {
      UpdateFlipPosition();
 	}
 
-   public function Initialize(board : Board, x : int, y : int, numColors : int) {
+   public static function Destroy(tile : Tile) {
+      GameObject.Destroy(tile.gameObject);
+   }
+
+   public static function Instantiate(board : Board, x : int, y : int, numColors : int) {
+      var tile = GameObject.Instantiate(Prefabs.getTilePrefab(), Vector3.zero, board.transform.rotation);
+      tile.Initialize(board, x, y, numColors);
+      return tile;
+   }
+
+   private function Initialize(board : Board, x : int, y : int, numColors : int) {
       m_board = board;
       gridPosition = new Vector2(x,y);
       desiredRotation = transform.rotation;

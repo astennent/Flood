@@ -196,7 +196,7 @@ class Board extends MonoBehaviour {
    function Regenerate() {
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
-            GameObject.Destroy(tile.gameObject);
+            Tile.Destroy(tile);
          }
       }
 
@@ -211,8 +211,7 @@ class Board extends MonoBehaviour {
       for (var y = 0 ; y < m_size ; y++) {
          var tileRow = new List.<Tile>();
          for (var x = 0 ; x < m_size ; x++) {
-            var tile : Tile = Tile.Instantiate(Prefabs.getTilePrefab(), transform.position, transform.rotation);
-            tile.Initialize(this, x, y, m_numColors);
+            var tile : Tile = Tile.Instantiate(this, x, y, m_numColors);
 
             tile.transform.localScale /= m_size;
             var adjust = m_size/2;
