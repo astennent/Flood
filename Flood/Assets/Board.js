@@ -97,7 +97,7 @@ class Board extends MonoBehaviour {
       var textHeight = buttonTop - boxTop - buttonPadding;
       var textRect = new Rect(boxLeft + buttonPadding, boxTop + buttonPadding, textWidth, textHeight);
       GUI.color = new Color(.1, .1, .1);
-      GUI.Label(textRect, "This will reset the board and you will lose your progress. Continue?");
+      GUI.Label(textRect, "This will end the game and reset the board. Continue?");
    }
 
    function Start () {
