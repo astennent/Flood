@@ -10,6 +10,7 @@ private static var DEFAULT_BEST = 99999;
 
 var recordClearedText : ClearedText;
 var nonRecordClearedText : ClearedText;
+var clickAnywhereText : ClearedText;
 
 function GetCurrentMoves() {
    return m_currentMoves;
@@ -19,6 +20,7 @@ function Reset() {
    m_currentMoves = 0;
    UpdateBestText();
    UpdateCurrentMovesText();
+   clickAnywhereText.Hide();
 }
 
 private function UpdateBestText() {
@@ -49,6 +51,7 @@ function Finish() {
    } else {
       nonRecordClearedText.Display();
    }
+   clickAnywhereText.Display();
 }
 
 private function getKey() {
