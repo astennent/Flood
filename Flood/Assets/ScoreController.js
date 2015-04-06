@@ -8,6 +8,9 @@ public var currentText : TextMesh;
 
 private static var DEFAULT_BEST = 99999;
 
+var recordClearedText : ClearedText;
+var nonRecordClearedText : ClearedText;
+
 function GetCurrentMoves() {
    return m_currentMoves;
 }
@@ -41,7 +44,10 @@ function Increment() {
 
 function Finish() {
    if (m_currentMoves < GetBestScore()) {
+      recordClearedText.Display();
       SetBestScore();
+   } else {
+      nonRecordClearedText.Display();
    }
 }
 
