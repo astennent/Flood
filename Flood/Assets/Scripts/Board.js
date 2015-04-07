@@ -70,9 +70,9 @@ class Board extends MonoBehaviour {
       GUI.skin = m_guiSkin;
 
       // Draw background box.
-      var width = Screen.width/2;
-      var height = Screen.height/2;
-      var boxLeft = width/2;
+      var width = Screen.width*3/4;
+      var height = Screen.height*2/5;
+      var boxLeft = Screen.width*1/8;
       var boxTop = height/2;
       var backgroundRect = new Rect(boxLeft, boxTop, width, height);
       GUI.Box(backgroundRect, "");
