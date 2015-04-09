@@ -1,3 +1,8 @@
+#pragma strict
+
+var levelPackContent : Transform;
+var levelPackButtonPrefab : GameObject;
+
 static var s_levelPacks = new List.<LevelPack>();
 
 function Start() {
@@ -15,21 +20,26 @@ function LoadLevelPacks() {
    var levelPack3 = new LevelPack("Large Pack", "Free large boards, 15x15", 150);
    var levelPack4 = new LevelPack("Huge Pack", "Free huge boards, 19x19", 150);
 
-   s_levelPacks.Add(levelPack1);
-   s_levelPacks.Add(levelPack2);
-   s_levelPacks.Add(levelPack3);
-   s_levelPacks.Add(levelPack4);
-   s_levelPacks.Add(levelPack1);
-   s_levelPacks.Add(levelPack2);
-   s_levelPacks.Add(levelPack3);
-   s_levelPacks.Add(levelPack4);
-   
-   s_levelPacks.Add(levelPack1);
-   s_levelPacks.Add(levelPack2);
-   s_levelPacks.Add(levelPack3);
-   s_levelPacks.Add(levelPack4);
-   s_levelPacks.Add(levelPack1);
-   s_levelPacks.Add(levelPack2);
-   s_levelPacks.Add(levelPack3);
-   s_levelPacks.Add(levelPack4);
+   AddToLevelPacks(levelPack1);
+   AddToLevelPacks(levelPack2);
+   AddToLevelPacks(levelPack3);
+   AddToLevelPacks(levelPack4);
+   AddToLevelPacks(levelPack1);
+   AddToLevelPacks(levelPack2);
+}
+
+
+function AddToLevelPacks(levelPack : LevelPack) {
+   var buttonInstance = GameObject.Instantiate(levelPackButtonPrefab).GetComponent.<LevelPackButton>();
+
+   buttonInstance.transform.SetParent(levelPackContent);
+   var rectTransform = buttonInstance.GetComponent.<RectTransform>();
+   var yOffset =  300 - (s_levelPacks.Count * rectTransform.rect.height);
+   rectTransform.anchoredPosition = new Vector3(0, yOffset, 0);
+
+   buttonInstance.title.text = levelPack.title;
+   buttonInstance.description.text = levelPack.description;
+   buttonInstance.completion.text = "0 / " + levelPack.count;
+
+   s_levelPacks.Add(levelPack);
 }

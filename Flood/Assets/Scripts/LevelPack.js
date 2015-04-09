@@ -1,13 +1,13 @@
 #pragma strict
 
 class LevelPack {
-   var name : String;
+   var title : String;
    var count : int;
    var description : String;
 
    // Constructor
-   function LevelPack(name : String, description : String, count : int) {
-      this.name = name;
+   function LevelPack(title : String, description : String, count : int) {
+      this.title = title;
       this.description = description;
       this.count = count;
    }
