@@ -7,22 +7,22 @@ var skybox : Material;
 
 var blockingBox : GameObject;
 
-private var m_menuToggleTime : float = -1;
-
-
 // This order corresponds with the order of in m_menus
-private var MENU_NONE = -1;
-private var MENU_MAIN = 0;
-private var MENU_LEVEL_PACKS = 1;
-private var MENU_SELECTED_PACK = 2;
-private var MENU_SETTINGS = 3;
-private var MENU_ABOUT = 4;
+private static var MENU_NONE = -1;
+private static var MENU_MAIN = 0;
+private static var MENU_LEVEL_PACKS = 1;
+private static var MENU_SELECTED_PACK = 2;
+private static var MENU_SETTINGS = 3;
+private static var MENU_ABOUT = 4;
 var m_menus : UnityEngine.UI.Image[];
-private var m_currentMenu : UnityEngine.UI.Image;
 
-private var m_scrollPositionLevelPacks = Vector2.zero;
+private var m_currentMenu : UnityEngine.UI.Image;
+private var m_selectedPack : LevelPack;
+
+private static var s_instance : GameController;
 
 function Start() {
+   s_instance = this;
    for (var menu in m_menus) {
       menu.gameObject.SetActive(false);
    }
@@ -54,6 +54,7 @@ function SetMenu(menuIndex : int) {
    
    var menu : UnityEngine.UI.Image;
    if (menuIndex != -1) {
+      Debug.Log(menuIndex);
       menu = m_menus[menuIndex];
       menu.gameObject.SetActive(true);
    }
@@ -61,11 +62,15 @@ function SetMenu(menuIndex : int) {
    m_currentMenu = menu;
 }
 
-function StartMenu() {
-   m_menuToggleTime = Time.time;
+// Buttons can only call member functions, but you cannot access the GameController from the ButtonPrefab
+// Thus we call this on a "Dummy" GameController accessible from the prefab, and pass through into the 
+// static function, which can update the real instance. Hooray!
+function OnClickLevelPack(levelPackButton : LevelPackButton) {
+   SelectLevelPack(levelPackButton);
 }
 
-function EndMenu() {
-   m_menuToggleTime = Time.time;
+private static function SelectLevelPack(levelPackButton : LevelPackButton) {
+   s_instance.m_selectedPack = levelPackButton.levelPack;
+   Debug.Log(s_instance.m_selectedPack.title);
+   s_instance.SetMenu(MENU_SELECTED_PACK);
 }
-

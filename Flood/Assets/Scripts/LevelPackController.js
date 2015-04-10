@@ -3,14 +3,10 @@
 var levelPackContent : Transform;
 var levelPackButtonPrefab : GameObject;
 
-static var s_levelPacks = new List.<LevelPack>();
+private var m_levelPacks = new List.<LevelPack>();
 
 function Start() {
    LoadLevelPacks();
-}
-
-static function GetLevelPacks() {
-   return s_levelPacks;
 }
 
 function LoadLevelPacks() {
@@ -34,12 +30,14 @@ function AddToLevelPacks(levelPack : LevelPack) {
 
    buttonInstance.transform.SetParent(levelPackContent);
    var rectTransform = buttonInstance.GetComponent.<RectTransform>();
-   var yOffset =  300 - (s_levelPacks.Count * rectTransform.rect.height);
+   var yOffset =  300 - (m_levelPacks.Count * rectTransform.rect.height);
    rectTransform.anchoredPosition = new Vector3(0, yOffset, 0);
 
    buttonInstance.title.text = levelPack.title;
    buttonInstance.description.text = levelPack.description;
    buttonInstance.completion.text = "0 / " + levelPack.count;
 
-   s_levelPacks.Add(levelPack);
+   buttonInstance.levelPack = levelPack;
+
+   m_levelPacks.Add(levelPack);
 }
