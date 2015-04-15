@@ -208,6 +208,8 @@ class Board extends MonoBehaviour {
       m_borderTiles.Clear();
       m_floodedTiles.Clear();
 
+      // Random.seed = 1;
+
       for (var y = 0 ; y < m_size ; y++) {
          var tileRow = new List.<Tile>();
          for (var x = 0 ; x < m_size ; x++) {

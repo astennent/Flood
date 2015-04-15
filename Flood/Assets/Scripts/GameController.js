@@ -62,15 +62,14 @@ function SetMenu(menuIndex : int) {
    m_currentMenu = menu;
 }
 
-// Buttons can only call member functions, but you cannot access the GameController from the ButtonPrefab
-// Thus we call this on a "Dummy" GameController accessible from the prefab, and pass through into the 
-// static function, which can update the real instance. Hooray!
 function OnClickLevelPack(levelPackButton : LevelPackButton) {
-   SelectLevelPack(levelPackButton);
+   s_instance.SetMenu(MENU_SELECTED_PACK);
+   Debug.Log(levelPackButton.levelPack.title);
+   s_instance.GetComponent.<LevelPackController>().SelectLevelPack(levelPackButton.levelPack);
 }
 
-private static function SelectLevelPack(levelPackButton : LevelPackButton) {
-   s_instance.m_selectedPack = levelPackButton.levelPack;
-   Debug.Log(s_instance.m_selectedPack.title);
-   s_instance.SetMenu(MENU_SELECTED_PACK);
+function OnClickLevel(levelButton : LevelButton) {
+   SetMenu(MENU_NONE);
+   Debug.Log(levelButton.level);
+   s_instance.GetComponent.<LevelPackController>().SelectLevel(levelButton.level);
 }
