@@ -14,5 +14,16 @@ class LevelPack {
       this.levels = levels;
       this.count = levels.length; 
    }
+
+   function LevelPack(title : String, description : String, count : int) {
+      this.title = title;
+      this.description = description;
+      this.levels = new Level[count];
+      this.count = levels.length;
+
+      for (var i = 0 ; i < count ; ++i) {
+         this.levels[i] = new Level(i);
+      }
+   }
 }
 
