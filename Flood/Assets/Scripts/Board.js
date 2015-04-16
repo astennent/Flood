@@ -12,14 +12,18 @@ class Board extends MonoBehaviour {
    public var colorTiles : List.<ColorTile>;
    private var scoreController : ScoreController;
 
-   private var m_size : int;
-   private var m_numColors : int;
+   private var m_size : int; // for Zen
+   private var m_numColors : int; // For Zen
+   private var m_level : Level;
 
    private var m_promptEnabled = false;
    private var m_promptCallback : Function;
    private var m_promptCallbackParam : int;
 
    public var m_guiSkin : GUISkin;
+
+   // Used for maintaining randomness for Zen mode.
+   private var zenSeed : int;
 
    function SetSize(size : int) {
       Prompt(SetSizeSkipPrompt, size);      
@@ -101,6 +105,8 @@ class Board extends MonoBehaviour {
    }
 
    function Start () {
+      zenSeed = Random.value * Mathf.Infinity;
+      Debug.Log(zenSeed);
       m_size = 15;
       m_numColors = 5;
       scoreController = GetComponent.<ScoreController>();
@@ -193,6 +199,22 @@ class Board extends MonoBehaviour {
       }
    }
 
+   function LoadLevel(level : Level) {
+      if (m_level == null) {
+         zenSeed = Random.value;
+      }
+      m_level = level;
+      Regenerate();
+   }
+
+   function LoadZen() {
+      if (m_level != null) {
+         Random.seed = zenSeed;
+      }
+      m_level = null;
+      Regenerate();
+   }
+
    function Regenerate() {
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
@@ -208,20 +230,25 @@ class Board extends MonoBehaviour {
       m_borderTiles.Clear();
       m_floodedTiles.Clear();
 
-      // Random.seed = 1;
+      if (m_level) {
+         Random.seed = m_level.seed;
+      }
 
-      for (var y = 0 ; y < m_size ; y++) {
+      var size = (m_level) ? m_level.size : m_size;
+      var numColors = (m_level) ? m_level.numColors : m_numColors;
+
+      for (var y = 0 ; y < size ; y++) {
          var tileRow = new List.<Tile>();
-         for (var x = 0 ; x < m_size ; x++) {
-            var tile : Tile = Tile.Instantiate(this, x, y, m_numColors);
+         for (var x = 0 ; x < size ; x++) {
+            var tile : Tile = Tile.Instantiate(this, x, y, numColors);
 
-            tile.transform.localScale /= m_size;
-            var adjust = m_size/2;
+            tile.transform.localScale /= size;
+            var adjust = size/2;
 
             var xPosition = x - adjust;
             var yPosition = y - adjust;
-            tile.transform.position += Vector3.right * (xPosition) / m_size * 10;
-            tile.transform.position += -Vector3.up * (yPosition) / m_size * 10;
+            tile.transform.position += Vector3.right * (xPosition) / size * 10;
+            tile.transform.position += -Vector3.up * (yPosition) / size * 10;
             tileRow.Add(tile);
          }
          m_tiles.Add(tileRow);

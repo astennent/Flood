@@ -5,17 +5,14 @@ class LevelPack {
    var count : int;
    var description : String;
 
-   var levels = new List.<Level>();
+   var levels : Level[];
 
    // Constructor
-   function LevelPack(title : String, description : String, count : int) {
+   function LevelPack(title : String, description : String, levels : Level[]) {
       this.title = title;
       this.description = description;
-      this.count = count;
-
-      for (var id = 1 ; id <= count ; ++id) {
-         var level = new Level(id);
-         levels.Add(level);
-      }
+      this.levels = levels;
+      this.count = levels.length; 
    }
 }
+

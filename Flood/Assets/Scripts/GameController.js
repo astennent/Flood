@@ -2,10 +2,9 @@
 
 var m_camera : FloodCamera;
 var skin : GUISkin;
-
 var skybox : Material;
-
 var blockingBox : GameObject;
+var board : Board;
 
 // This order corresponds with the order of in m_menus
 private static var MENU_NONE = -1;
@@ -16,7 +15,7 @@ private static var MENU_SETTINGS = 3;
 private static var MENU_ABOUT = 4;
 var m_menus : UnityEngine.UI.Image[];
 
-private var m_currentMenu : UnityEngine.UI.Image;
+private var m_currentMenuIndex : int;
 private var m_selectedPack : LevelPack;
 
 private static var s_instance : GameController;
@@ -29,47 +28,64 @@ function Start() {
    SetMenu(MENU_MAIN);
 }
 
+
 function Update() {
    if (Input.GetKeyDown(KeyCode.Escape)) { 
-      if (m_currentMenu == MENU_LEVEL_PACKS) { // add other screens here to go back.
-         m_currentMenu = m_menus[MENU_MAIN];
-      } else {
+      OnBackButtonPressed();
+   }
+}
+
+function OnBackButtonPressed() {
+   switch(m_currentMenuIndex) {
+      case MENU_NONE:
+         // TODO: Be smarter about this.
+         SetMenu(MENU_MAIN);
+      break;
+      case MENU_MAIN:
          Application.Quit();
-      }
+      break;
+      case MENU_LEVEL_PACKS:
+         SetMenu(MENU_MAIN);
+      break;
+      case MENU_SELECTED_PACK:
+         SetMenu(MENU_LEVEL_PACKS);
+      break;
+      case MENU_SETTINGS:
+         SetMenu(MENU_MAIN);
+      break;
+      case MENU_ABOUT:
+         SetMenu(MENU_MAIN);
+      break;
    }
-
-   // todo: fade
-   if (m_currentMenu != null) {
-      blockingBox.SetActive(true);
-   } else {
-      blockingBox.SetActive(false);
-   }
-
 }
 
 function SetMenu(menuIndex : int) {
-   if (m_currentMenu) {
-      m_currentMenu.gameObject.SetActive(false);
-   }
-   
-   var menu : UnityEngine.UI.Image;
-   if (menuIndex != -1) {
-      Debug.Log(menuIndex);
-      menu = m_menus[menuIndex];
-      menu.gameObject.SetActive(true);
+   if (m_currentMenuIndex != MENU_NONE) {
+      m_menus[m_currentMenuIndex].gameObject.SetActive(false);
    }
 
-   m_currentMenu = menu;
+   m_currentMenuIndex = menuIndex;
+   if (menuIndex != MENU_NONE) {
+      var menu = m_menus[menuIndex];
+      menu.gameObject.SetActive(true);
+      blockingBox.SetActive(true);
+   } 
+   else {
+      blockingBox.SetActive(false);
+   } 
+}
+
+function OnClickZen() {
+   s_instance.board.LoadZen();
+   s_instance.SetMenu(MENU_NONE);
 }
 
 function OnClickLevelPack(levelPackButton : LevelPackButton) {
    s_instance.SetMenu(MENU_SELECTED_PACK);
-   Debug.Log(levelPackButton.levelPack.title);
    s_instance.GetComponent.<LevelPackController>().SelectLevelPack(levelPackButton.levelPack);
 }
 
 function OnClickLevel(levelButton : LevelButton) {
-   SetMenu(MENU_NONE);
-   Debug.Log(levelButton.level);
-   s_instance.GetComponent.<LevelPackController>().SelectLevel(levelButton.level);
+   s_instance.board.LoadLevel(levelButton.level);
+   s_instance.SetMenu(MENU_NONE);
 }
