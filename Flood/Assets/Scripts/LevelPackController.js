@@ -19,6 +19,11 @@ static var tilesPerPage = 35;
 static var pageSize = tilesPerRow*tileSize + (tilesPerRow-1)*tilePadding;
 static var pagePadding = 100;
 
+static var screenWidth = 1080;
+
+// Calculated when a page is made.
+var pageOffsets = new List.<int>();
+
 function Start() {
    LoadLevelPacks();
 }
@@ -33,53 +38,58 @@ function LoadLevelPacks() {
 
 }
 
-var currentPosition : float;
-var restPosition : float = 0;
+var releaseTime : float = 0;
+var wasTouching = false;
 function Update() {
+   if (pageOffsets.Count == 0) {
+      return;
+   }
 
-   // var touchCurrent = Input.GetMouseButton(0);
-   // var touchEnded = Input.GetMouseButtonUp(0);
-   // for (var touch in Input.touches) {
-   //    if (touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled) {
-   //        touchCurrent = true;
-   //    } else if (touch.phase == TouchPhase.Ended) {
-   //       touchEnded = true;
-   //    }
-   // }
+   var isTouching = Input.GetMouseButton(0);
+   //var touchEnded = Input.GetMouseButtonUp(0);
+   for (var touch in Input.touches) {
+      if (touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled) {
+          isTouching = true;
+      } 
+   }
 
-   // var rectTransform = selectedPackContent.GetComponent.<RectTransform>();
-   // var updatedPosition = rectTransform.anchoredPosition.x;
-   // var positionDelta = updatedPosition - currentPosition;
-   // if (!touchCurrent && touchEnded) {
-   //    if (positionDelta < -200) {
-   //       Debug.Log("Swipe Left");
-   //       SwipeSelectedPack(-pageSize);
-   //    }
-   //    if (positionDelta > 200) {
-   //       Debug.Log("Swipe right");
-   //       SwipeSelectedPack(pageSize);
-   //    }
-   // } 
-   // if (!touchCurrent && !touchEnded) {
-   //    //
-   // }
-   // if (touchCurrent && !touchEnded) {
-   //    //rectTransform.position.x += positionDelta;
-   // }
+   if (isTouching) {
+      wasTouching = true;
+      return;
+   }
+
+
+   if (!isTouching && wasTouching) {
+      releaseTime = Time.time;
+      wasTouching = false;
+   }
+
+   var inertiaLag : float = .15; // Time in seconds before snap kicks in.
+   var timeSinceRelease = Time.time - releaseTime;
+   if (timeSinceRelease < inertiaLag) {
+      return;
+   }
 
    var scrollRect = selectedPackContent.GetComponent.<RectTransform>();
-   Debug.Log(selectedPackContent.position.x);
-   //scrollRect.position.x = 1000;
+   var currentPosition = scrollRect.position.x;
+   var smallestDistance = Mathf.Infinity;
+   var targetPosition = 0;
+   for (var offset in pageOffsets) {
+      var dist = Mathf.Abs(currentPosition - offset);
+      if (dist < smallestDistance) {
+         targetPosition = offset;
+         smallestDistance = dist;
+      }
+   }
 
+   if (currentPosition == targetPosition) {
+      return;
+   }
 
-
+   scrollRect.position.x = (Mathf.Abs(currentPosition - targetPosition) < 3) 
+      ? targetPosition
+      : Mathf.Lerp(scrollRect.position.x, targetPosition, timeSinceRelease - inertiaLag);
 }
-
-// private function SwipeSelectedPack(adjust : float) {
-//    var scrollRect = selectedPackContent.GetComponent.<RectTransform>();
-//    //scrollRect.position.x = 1000;
-// }
-
 
 function LoadPack(levelPack : LevelPack, index : int) {
    var buttonInstance = GameObject.Instantiate(levelPackButtonPrefab).GetComponent.<LevelPackButton>();
@@ -151,9 +161,18 @@ function SelectLevelPack(levelPack : LevelPack) {
    }
 
 
+
+
+   // Set up  the width of the scrolling rect.
    var scrollingTransform = selectedPackContent.GetComponent.<RectTransform>();
    scrollingTransform.sizeDelta.x = (maxTileOffset - minTileOffset) - pageSize;
-   //scrollingTransform.sizeDelta.x = (pageSize * (totalPages-1)) + (pagePadding*(totalPages-1));
-   //Debug.Log(scrollingTransform.sizeDelta.x);
-   scrollingTransform.position.x = 1;
+
+   // Set up offsets for snapping.
+   pageOffsets = new List.<int>();
+   var lastPageX = 502;
+   for (var p = 0 ; p < totalPages ; ++p) {
+      pageOffsets.Add(lastPageX);
+      lastPageX += screenWidth/2;
+   }
+
 }
