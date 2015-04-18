@@ -33,7 +33,7 @@ class Board extends MonoBehaviour {
       Regenerate();
    }
    function GetSize() {
-      return m_size;
+      return (m_level) ? m_level.size : m_size;
    }
    function SetNumColors(numColors : int) {
       Prompt(SetNumColorsSkipPrompt, numColors);
@@ -49,7 +49,7 @@ class Board extends MonoBehaviour {
       }
    }
    function GetNumColors() {
-      return m_numColors;
+      return (m_level) ? m_level.numColors : m_numColors;
    }
 
    function Prompt(callbackFunction : Function, param : int) {
@@ -122,10 +122,10 @@ class Board extends MonoBehaviour {
       if (tile.x() > 0) {
          allNeighborsFlooded = floodNeighbor(tile, 0, -1, targetColor) && allNeighborsFlooded;
       }      
-      if (tile.y() < m_size-1) {
+      if (tile.y() < GetSize()-1) {
          allNeighborsFlooded = floodNeighbor(tile, 1, 0, targetColor) && allNeighborsFlooded;
       }   
-      if (tile.x() < m_size-1) {
+      if (tile.x() < GetSize()-1) {
          allNeighborsFlooded = floodNeighbor(tile, 0, 1, targetColor) && allNeighborsFlooded;
       }  
       if (allNeighborsFlooded) {
@@ -152,6 +152,7 @@ class Board extends MonoBehaviour {
    }
 
    function ProcessClick(tileX : int, tileY : int) {
+      Debug.Log(tileX + " " + tileY);
       ProcessClick(tileX, tileY, m_tiles[tileY][tileX].getColor());
    } 
 
@@ -234,8 +235,8 @@ class Board extends MonoBehaviour {
          Random.seed = m_level.seed;
       }
 
-      var size = (m_level) ? m_level.size : m_size;
-      var numColors = (m_level) ? m_level.numColors : m_numColors;
+      var size = GetSize();
+      var numColors = GetNumColors();
 
       for (var y = 0 ; y < size ; y++) {
          var tileRow = new List.<Tile>();

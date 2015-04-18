@@ -64,7 +64,7 @@ function Update() {
       wasTouching = false;
    }
 
-   var inertiaLag : float = .15; // Time in seconds before snap kicks in.
+   var inertiaLag : float = .1; // Time in seconds before snap kicks in.
    var timeSinceRelease = Time.time - releaseTime;
    if (timeSinceRelease < inertiaLag) {
       return;
@@ -125,9 +125,12 @@ function SelectLevelPack(levelPack : LevelPack) {
    var minTileOffset = Mathf.Infinity;
    var maxTileOffset = -Mathf.Infinity;
 
+   for (var child : Transform in selectedPackContent.transform) {
+      Destroy(child.gameObject);
+   }
+
    for (var level in m_selectedPack.levels) {
       var buttonInstance = GameObject.Instantiate(levelButtonPrefab).GetComponent.<LevelButton>();
-
       buttonInstance.transform.SetParent(selectedPackContent);
 
       var page = index / tilesPerPage;
