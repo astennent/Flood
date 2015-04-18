@@ -21,8 +21,8 @@ class LevelPack {
       this.levels = new Level[count];
       this.count = levels.length;
 
-      for (var i = 0 ; i < count ; ++i) {
-         this.levels[i] = new Level(i);
+      for (var i = 1 ; i <= count ; ++i) {
+         this.levels[i-1] = new Level(i);
       }
    }
 }
