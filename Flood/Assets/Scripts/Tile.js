@@ -33,7 +33,7 @@ class Tile extends MonoBehaviour {
       gridPosition = new Vector2(x,y);
       desiredRotation = transform.rotation;
       m_originalColor = (Random.Range(0, 1.0) * numColors);
-      setColor(m_originalColor, Vector2.zero);
+      setColor(m_originalColor, Vector2.zero, false);
    }
 
    private function updateZ(elapsedTime : float) {
@@ -77,7 +77,13 @@ class Tile extends MonoBehaviour {
    }
 
    // Returns the time offset so that the board can avoid delay when clicking far away.
-   public function setColor(colorIndex : int, clickOrigin : Vector2) {
+   public function setColor(colorIndex : int, clickOrigin : Vector2, isHinting : boolean) {
+
+      if (isHinting) {
+         m_colorIndex = colorIndex;
+         return 0;
+      }
+
       if (Mathf.Abs(transform.position.z) > .005) {
          transform.position.z = 0;
       }
@@ -111,8 +117,8 @@ class Tile extends MonoBehaviour {
       return animationDelay;
    }
 
-   public function revert() {
-      setColor(m_originalColor, Vector2.zero);
+   public function revert(isHinting : boolean) {
+      setColor(m_originalColor, Vector2.zero, isHinting);
    }
 
    public function getColor() {
