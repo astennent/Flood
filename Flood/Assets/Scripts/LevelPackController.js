@@ -1,4 +1,4 @@
-#pragma strict
+#pragma downcast
 
 var levelPackContent : Transform;
 var levelPackButtonPrefab : GameObject;

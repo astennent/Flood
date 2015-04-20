@@ -25,6 +25,9 @@ class Board extends MonoBehaviour {
    // Used for maintaining randomness for Zen mode.
    private var zenSeed : int;
 
+   // Each entry is a list of tiles that were flooded each turn.
+   private var m_undoStack = new LinkedList.<UndoNode>() ;
+
    function SetSize(size : int) {
       Prompt(SetSizeSkipPrompt, size);      
    }
@@ -106,42 +109,44 @@ class Board extends MonoBehaviour {
 
    function Start () {
       zenSeed = Random.value * Mathf.Infinity;
-      Debug.Log(zenSeed);
       m_size = 15;
       m_numColors = 5;
       scoreController = GetComponent.<ScoreController>();
       Regenerate();
    }
 
+   function GetTile(y : int, x : int) {
+      if (y >= 0 && x >= 0 && y < GetSize() && x < GetSize()) {
+         return m_tiles[y][x];
+      }
+      return null;
+   }
+
    // Returns true if this tile is surrounded by flooded neighbors.
    private function floodFrom(tile : Tile, targetColor : int) {
-      var allNeighborsFlooded = true;
-      if (tile.y() > 0) {
-         allNeighborsFlooded = floodNeighbor(tile, -1, 0, targetColor) && allNeighborsFlooded;
-      }   
-      if (tile.x() > 0) {
-         allNeighborsFlooded = floodNeighbor(tile, 0, -1, targetColor) && allNeighborsFlooded;
-      }      
-      if (tile.y() < GetSize()-1) {
-         allNeighborsFlooded = floodNeighbor(tile, 1, 0, targetColor) && allNeighborsFlooded;
-      }   
-      if (tile.x() < GetSize()-1) {
-         allNeighborsFlooded = floodNeighbor(tile, 0, 1, targetColor) && allNeighborsFlooded;
-      }  
+      var x = tile.x();
+      var y = tile.y();
+      var allNeighborsFlooded = floodNeighbor(tile, GetTile(y-1, x), targetColor);
+      allNeighborsFlooded = floodNeighbor(tile, GetTile(y+1, x), targetColor) && allNeighborsFlooded;
+      allNeighborsFlooded = floodNeighbor(tile, GetTile(y, x-1), targetColor) && allNeighborsFlooded;
+      allNeighborsFlooded = floodNeighbor(tile, GetTile(y, x+1), targetColor) && allNeighborsFlooded;
       if (allNeighborsFlooded) {
          m_borderTiles.Remove(tile);
       }
    }
 
    // Helper for ProcessClick.
-   // Returns true if the neighbor is flooded after execution.
-   private function floodNeighbor(tile : Tile, vertical : int, horizontal : int, targetColor : int) {
-      var neighbor = m_tiles[tile.y()+vertical][tile.x()+horizontal];
-      if (m_floodedTiles.Contains(neighbor)) {
+   // Returns false if the neighbor remains unflooded after execution.
+   private function floodNeighbor(tile : Tile, neighbor : Tile, targetColor : int) {
+      if (!neighbor || m_floodedTiles.Contains(neighbor)) {
          return true;
       }
 
+
       if (neighbor.getColor() == targetColor) {
+         if (m_undoStack.Count > 0) {
+            m_undoStack.Last.Value.tiles.Add(neighbor);
+         }
          m_floodedTiles.Add(neighbor);
          m_borderTiles.Add(neighbor);
          floodFrom(neighbor, targetColor);
@@ -152,7 +157,6 @@ class Board extends MonoBehaviour {
    }
 
    function ProcessClick(tileX : int, tileY : int) {
-      Debug.Log(tileX + " " + tileY);
       ProcessClick(tileX, tileY, m_tiles[tileY][tileX].getColor());
    } 
 
@@ -161,13 +165,13 @@ class Board extends MonoBehaviour {
    }
 
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
-
       // Reset the game.
       if (HasGameEnded()) {
          Regenerate();
          return;
       }
 
+      m_undoStack.AddLast(new UndoNode(m_tiles[0][0].getColor()));
       var oldFloodedCount = m_floodedTiles.Count;
       var oldBorderTiles = new List.<Tile>(m_borderTiles);
       for (var tile in oldBorderTiles) {
@@ -176,10 +180,12 @@ class Board extends MonoBehaviour {
 
       if (m_floodedTiles.Count > oldFloodedCount) {
          scoreController.Increment();
+      } else {
+         m_undoStack.RemoveLast();
       }
 
       var origin = new Vector2(tileX, tileY);
-      var minDelay = 100000.0; // big number.
+      var minDelay = Mathf.Infinity; // big number.
       for (var tile in m_floodedTiles) {
          var tileDelay = tile.setColor(targetColor, origin);
          if (tileDelay < minDelay) {
@@ -199,6 +205,52 @@ class Board extends MonoBehaviour {
          scoreController.Finish();
       }
    }
+
+   function Update() {
+      if (Input.GetKeyDown(KeyCode.O)) {
+         Undo();
+      }
+   }
+
+   function Undo() {
+      if (m_undoStack.Count == 0) {
+         return; // Nothing to undo.
+      }
+
+      var lastUndoNode = m_undoStack.Last.Value;
+      var toRevert = lastUndoNode.tiles;
+
+      for (var revertedTile in toRevert) {
+         revertedTile.revert();
+         m_floodedTiles.Remove(revertedTile);
+         m_borderTiles.Remove(revertedTile);
+      }
+
+      for (revertedTile in toRevert) {
+         var x = revertedTile.x();
+         var y = revertedTile.y();
+
+         var neighbor = GetTile(y-1, x);
+         if (neighbor && m_floodedTiles.Contains(neighbor))
+            m_borderTiles.Add(neighbor);
+         neighbor = GetTile(y+1, x);
+         if (neighbor && m_floodedTiles.Contains(neighbor))
+            m_borderTiles.Add(neighbor);
+         neighbor = GetTile(y, x-1);
+         if (neighbor && m_floodedTiles.Contains(neighbor))
+            m_borderTiles.Add(neighbor);
+         neighbor = GetTile(y, x+1);
+         if (neighbor && m_floodedTiles.Contains(neighbor))
+            m_borderTiles.Add(neighbor);
+      }     
+
+      for (var tile in m_floodedTiles) {
+         tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()));
+      } 
+
+      m_undoStack.RemoveLast();
+   }
+
 
    function LoadLevel(level : Level) {
       if (m_level == null) {
@@ -269,5 +321,14 @@ class Board extends MonoBehaviour {
 
    function HasGameEnded() {
       return (m_borderTiles.Count == 0);
+   }
+}
+
+class UndoNode {
+   var tiles = new List.<Tile>();
+   var color : int = -1;
+
+   function UndoNode(color : int) {
+      this.color = color;
    }
 }
