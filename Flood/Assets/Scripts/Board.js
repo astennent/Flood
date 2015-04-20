@@ -28,6 +28,8 @@ class Board extends MonoBehaviour {
    // Each entry is a list of tiles that were flooded each turn.
    private var m_undoStack = new LinkedList.<UndoNode>() ;
 
+   private var m_hinting : boolean = false;
+
    function SetSize(size : int) {
       Prompt(SetSizeSkipPrompt, size);      
    }
@@ -68,44 +70,7 @@ class Board extends MonoBehaviour {
       m_promptEnabled = true;
    }
 
-   function OnGUI() {
 
-      if (!m_promptEnabled) {
-         return;
-      }
-
-      GUI.skin = m_guiSkin;
-
-      // Draw background box.
-      var width = Screen.width*3/4;
-      var height = Screen.height*2/5;
-      var boxLeft = Screen.width*1/8;
-      var boxTop = height/2;
-      var backgroundRect = new Rect(boxLeft, boxTop, width, height);
-      GUI.Box(backgroundRect, "");
-
-      // Draw buttons
-      var buttonPadding = width/12;
-      var buttonHeight = height/4;
-      var buttonWidth = width * 3.0 / 8.0;
-      var buttonTop = boxTop + height - buttonHeight - buttonPadding;
-      var buttonRect = new Rect(boxLeft + buttonPadding, buttonTop, buttonWidth, buttonHeight);
-      if (GUI.Button(buttonRect, "Continue") ) {
-         m_promptEnabled = false;
-         m_promptCallback(m_promptCallbackParam);
-      }
-
-      buttonRect.x += buttonWidth + buttonPadding;
-      if (GUI.Button(buttonRect, "Cancel") ) {
-         m_promptEnabled = false;
-      }
-
-      var textWidth = width - 2*buttonPadding;
-      var textHeight = buttonTop - boxTop - buttonPadding;
-      var textRect = new Rect(boxLeft + buttonPadding, boxTop + buttonPadding, textWidth, textHeight);
-      GUI.color = new Color(.1, .1, .1);
-      GUI.Label(textRect, "This will end the game and reset the board. Continue?");
-   }
 
    function Start () {
       zenSeed = Random.value * Mathf.Infinity;
@@ -178,20 +143,25 @@ class Board extends MonoBehaviour {
          floodFrom(tile, targetColor);
       }
 
+      var origin : Vector2 = new Vector2(tileX, tileY);
+      var minDelay = Mathf.Infinity; // big number.
+      for (var tile in m_floodedTiles) {
+         var tileDelay = tile.setColor(targetColor, origin, m_hinting);
+         if (tileDelay < minDelay) {
+            minDelay = tileDelay;
+         }
+      }
+
+      if (m_hinting) {
+         return;
+      }
+
       if (m_floodedTiles.Count > oldFloodedCount) {
          scoreController.Increment();
       } else {
          m_undoStack.RemoveLast();
       }
 
-      var origin = new Vector2(tileX, tileY);
-      var minDelay = Mathf.Infinity; // big number.
-      for (var tile in m_floodedTiles) {
-         var tileDelay = tile.setColor(targetColor, origin);
-         if (tileDelay < minDelay) {
-            minDelay = tileDelay;
-         }
-      }
 
       // Ensure that no matter where you click, animation will begin immediately. Not doing this
       // makes it look like the game is lagging when you click far away from flooded tiles.
@@ -207,8 +177,11 @@ class Board extends MonoBehaviour {
    }
 
    function Update() {
-      if (Input.GetKeyDown(KeyCode.O)) {
+      if (Input.GetKeyDown(KeyCode.U)) {
          Undo();
+      }
+      if (Input.GetKeyDown(KeyCode.H)) {
+         CalculateHint();
       }
    }
 
@@ -221,7 +194,7 @@ class Board extends MonoBehaviour {
       var toRevert = lastUndoNode.tiles;
 
       for (var revertedTile in toRevert) {
-         revertedTile.revert();
+         revertedTile.revert(m_hinting);
          m_floodedTiles.Remove(revertedTile);
          m_borderTiles.Remove(revertedTile);
       }
@@ -245,7 +218,7 @@ class Board extends MonoBehaviour {
       }     
 
       for (var tile in m_floodedTiles) {
-         tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()));
+         tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()), m_hinting);
       } 
 
       m_undoStack.RemoveLast();
@@ -321,6 +294,102 @@ class Board extends MonoBehaviour {
 
    function HasGameEnded() {
       return (m_borderTiles.Count == 0);
+   }
+
+   function OnGUI() {
+
+      if (!m_promptEnabled) {
+         return;
+      }
+
+      GUI.skin = m_guiSkin;
+
+      // Draw background box.
+      var width = Screen.width*3/4;
+      var height = Screen.height*2/5;
+      var boxLeft = Screen.width*1/8;
+      var boxTop = height/2;
+      var backgroundRect = new Rect(boxLeft, boxTop, width, height);
+      GUI.Box(backgroundRect, "");
+
+      // Draw buttons
+      var buttonPadding = width/12;
+      var buttonHeight = height/4;
+      var buttonWidth = width * 3.0 / 8.0;
+      var buttonTop = boxTop + height - buttonHeight - buttonPadding;
+      var buttonRect = new Rect(boxLeft + buttonPadding, buttonTop, buttonWidth, buttonHeight);
+      if (GUI.Button(buttonRect, "Continue") ) {
+         m_promptEnabled = false;
+         m_promptCallback(m_promptCallbackParam);
+      }
+
+      buttonRect.x += buttonWidth + buttonPadding;
+      if (GUI.Button(buttonRect, "Cancel") ) {
+         m_promptEnabled = false;
+      }
+
+      var textWidth = width - 2*buttonPadding;
+      var textHeight = buttonTop - boxTop - buttonPadding;
+      var textRect = new Rect(boxLeft + buttonPadding, boxTop + buttonPadding, textWidth, textHeight);
+      GUI.color = new Color(.1, .1, .1);
+      GUI.Label(textRect, "This will end the game and reset the board. Continue?");
+   }
+
+   function CalculateHint() {
+      m_hinting = true;
+      var hintNode = CalculateHint(0);
+      m_hinting = false;
+      ProcessClick(hintNode.color);
+   }
+
+   static var MAX_DEPTH = 3;
+   function CalculateHint(currentDepth : int) : HintNode {
+      var numFloodedTiles = m_floodedTiles.Count;
+      var currentColor = m_tiles[0][0].getColor();
+      if (currentDepth == MAX_DEPTH || numFloodedTiles == GetSize()*GetSize()) {
+         return new HintNode(numFloodedTiles, currentColor, currentDepth);
+      }
+
+      var bestHintNode : HintNode;
+      var bestFloodedCount : int = 0;
+
+      var numColors = GetNumColors();
+      for (var colorIndex = 0 ; colorIndex < numColors ; ++colorIndex) {
+         ProcessClick(colorIndex);
+
+         if (m_floodedTiles.Count > numFloodedTiles) {
+            var hintNode = CalculateHint(currentDepth+1);
+
+            if (hintNode.floodedCount > bestFloodedCount || 
+                  (hintNode.floodedCount == bestFloodedCount && hintNode.depth < bestHintNode.depth)
+                  ) {
+               bestHintNode = hintNode;
+               bestFloodedCount = hintNode.floodedCount;
+            }
+         }
+
+
+         Undo();
+      }
+
+      if (currentDepth > 0) {
+         bestHintNode.color = currentColor;
+      }
+
+      return bestHintNode;
+   }
+
+}
+
+class HintNode {
+   var floodedCount : int;
+   var color : int;
+   var depth : int;
+
+   function HintNode(floodedCount : int, color : int, depth : int) {
+      this.floodedCount = floodedCount;
+      this.color = color;
+      this.depth = depth;
    }
 }
 
