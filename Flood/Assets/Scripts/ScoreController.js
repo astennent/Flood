@@ -54,10 +54,17 @@ function Finish() {
    clickAnywhereText.Display();
 }
 
-private function getKey() {
+private function getKey() : String { 
    var numColors = board.GetNumColors();
    var size = board.GetSize();
-   return numColors + "-" + size;
+   var key = numColors + "-" + size;
+   
+   var level = board.GetLevel();
+   if (level) {
+      key += "-"+level.seed;
+   }
+   
+   return key;
 }
 
 private function GetBestScore() {

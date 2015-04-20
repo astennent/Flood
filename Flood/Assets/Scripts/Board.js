@@ -30,6 +30,9 @@ class Board extends MonoBehaviour {
 
    private var m_hinting : boolean = false;
 
+   function GetLevel() {
+      return m_level;
+   }
    function SetSize(size : int) {
       Prompt(SetSizeSkipPrompt, size);      
    }
