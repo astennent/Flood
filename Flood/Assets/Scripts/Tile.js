@@ -5,6 +5,7 @@ class Tile extends MonoBehaviour {
    public var m_back : Renderer;
 
    private var desiredRotation : Quaternion;
+   var m_originalColor : int = -1;
    var m_colorIndex : int = -1;
 
    var m_board : Board;
@@ -31,7 +32,8 @@ class Tile extends MonoBehaviour {
       m_board = board;
       gridPosition = new Vector2(x,y);
       desiredRotation = transform.rotation;
-      setColor((Random.Range(0, 1.0) * numColors), Vector2.zero);
+      m_originalColor = (Random.Range(0, 1.0) * numColors);
+      setColor(m_originalColor, Vector2.zero);
    }
 
    private function updateZ(elapsedTime : float) {
@@ -87,7 +89,6 @@ class Tile extends MonoBehaviour {
       transform.Rotate(Vector3.forward, 180);
 
       m_back.material = ColorController.colorMaterials[colorIndex];
-      //m_back.material.SetColor("_Color", colors[colorIndex]);
 
       var animationDelay = Vector2.Distance(gridPosition, clickOrigin)/30.0;
       flipStartTime = Time.time + animationDelay;
@@ -108,6 +109,10 @@ class Tile extends MonoBehaviour {
       }
 
       return animationDelay;
+   }
+
+   public function revert() {
+      setColor(m_originalColor, Vector2.zero);
    }
 
    public function getColor() {
