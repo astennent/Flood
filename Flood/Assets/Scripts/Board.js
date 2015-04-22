@@ -10,6 +10,8 @@ class Board extends MonoBehaviour {
 
    public var scrollbarThumb : ScrollThumb;
    public var colorTiles : List.<ColorTile>;
+   public var sizeTiles : List.<SizeTile>;
+   public var scrollThumb : ScrollThumb;
    private var scoreController : ScoreController;
 
    private var m_size : int; // for Zen
@@ -80,7 +82,6 @@ class Board extends MonoBehaviour {
       m_size = 15;
       m_numColors = 5;
       scoreController = GetComponent.<ScoreController>();
-      Regenerate();
    }
 
    function GetTile(y : int, x : int) {
@@ -231,6 +232,7 @@ class Board extends MonoBehaviour {
    function LoadLevel(level : Level) {
       if (m_level == null) {
          zenSeed = Random.value;
+         ActivateTileButtons(false);
       }
       m_level = level;
       Regenerate();
@@ -239,10 +241,21 @@ class Board extends MonoBehaviour {
    function LoadZen() {
       if (m_level != null) {
          Random.seed = zenSeed;
+         m_level = null;
+         ActivateTileButtons(true);
       }
-      m_level = null;
       Regenerate();
    }
+
+   private function ActivateTileButtons(isEnabled : boolean) {
+      for (var sizeTile in sizeTiles) {
+         sizeTile.gameObject.SetActive(isEnabled);
+      }
+      for (var colorTile in colorTiles) {
+         colorTile.gameObject.SetActive(isEnabled);
+      }
+      scrollbarThumb.gameObject.SetActive(isEnabled);
+   } 
 
    function Regenerate() {
       for (var tileRow in m_tiles) {
