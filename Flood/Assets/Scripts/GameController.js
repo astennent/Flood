@@ -38,8 +38,11 @@ function Update() {
 function OnBackButtonPressed() {
    switch(m_currentMenuIndex) {
       case MENU_NONE:
-         // TODO: Be smarter about this.
-         SetMenu(MENU_MAIN);
+         if (s_instance.board.GetLevel()) {
+            SetMenu(MENU_SELECTED_PACK);
+         } else {
+            SetMenu(MENU_MAIN);
+         }
       break;
       case MENU_MAIN:
          Application.Quit();
