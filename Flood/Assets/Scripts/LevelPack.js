@@ -25,5 +25,12 @@ class LevelPack {
          this.levels[i-1] = new Level(i);
       }
    }
+
+   function getLevel(index : int) {
+      if (index >= levels.length) {
+         return null;
+      }
+      return levels[index];
+   }
 }
 
