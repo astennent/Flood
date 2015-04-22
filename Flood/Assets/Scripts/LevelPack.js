@@ -26,7 +26,26 @@ class LevelPack {
       }
    }
 
-   function getLevel(index : int) {
+   function SetSize(size : int) {
+      for (var level in levels) {
+         level.size = size;
+      }
+      return this;
+   }
+
+   function SetNumColors(numColors : int) {
+      return SetNumColors([numColors]);
+   }
+
+   function SetNumColors(numColorsArray : int[]) {
+      for (var index = 0 ; index < levels.length ; ++index) {
+         var numColorsIndex = index * numColorsArray.length / levels.length;
+         levels[index].numColors = numColorsArray[numColorsIndex];
+      }
+      return this;
+   }
+
+   function GetLevel(index : int) {
       if (index >= levels.length) {
          return null;
       }

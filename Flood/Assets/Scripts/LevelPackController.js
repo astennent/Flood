@@ -1,5 +1,6 @@
 #pragma downcast
 
+var levelPackScrollRect : UnityEngine.UI.ScrollRect;
 var levelPackContent : Transform;
 var levelPackButtonPrefab : GameObject;
 
@@ -12,14 +13,11 @@ var canvas : Canvas;
 
 private var m_selectedPack : LevelPack;
 
-static var tileSize = 190; // This needs to be kept in sync with the prefab
 static var tilesPerRow = 5; // this...
-static var tilePadding = 25; // ...and this are arbitrary, but they look good on 9:16 screens.
 static var tilesPerPage = 35;
-static var pageSize = tilesPerRow*tileSize + (tilesPerRow-1)*tilePadding;
-static var pagePadding = 100;
-
 static var screenWidth = 1080;
+
+var levelButtons : List.<LevelButton>;
 
 // Calculated when a page is made.
 var pageOffsets = new List.<int>();
@@ -54,6 +52,7 @@ function Update() {
    }
 
    if (isTouching) {
+      levelPackScrollRect.inertia = true;
       wasTouching = true;
       return;
    }
@@ -70,8 +69,8 @@ function Update() {
       return;
    }
 
-   var scrollRect = selectedPackContent.GetComponent.<RectTransform>();
-   var currentPosition = scrollRect.position.x;
+   var contentRect = selectedPackContent.GetComponent.<RectTransform>();
+   var currentPosition = contentRect.anchoredPosition.x;
    var smallestDistance = Mathf.Infinity;
    var targetPosition = 0;
    for (var offset in pageOffsets) {
@@ -86,9 +85,14 @@ function Update() {
       return;
    }
 
-   scrollRect.position.x = (Mathf.Abs(currentPosition - targetPosition) < 3) 
-      ? targetPosition
-      : Mathf.Lerp(scrollRect.position.x, targetPosition, timeSinceRelease - inertiaLag);
+   if (Mathf.Abs(currentPosition - targetPosition) < 10) {
+      contentRect.anchoredPosition.x = targetPosition;
+      return;
+   }
+
+   levelPackScrollRect.inertia = false;
+   var lerpSpeed = Time.time - releaseTime;
+   contentRect.anchoredPosition.x = Mathf.Lerp(contentRect.anchoredPosition.x, targetPosition, lerpSpeed);
 }
 
 function LoadPack(levelPack : LevelPack, index : int) {
@@ -116,66 +120,30 @@ function SelectLevelPack(levelPack : LevelPack) {
    levelPackTitle.text = m_selectedPack.title;
 
 
+   for (var pageTransform : Transform in selectedPackContent.transform) {
+      for (var buttonTransform : Transform in pageTransform) {
+         levelButton = buttonTransform.GetComponent.<LevelButton>();
+         var index = levelButton.index + levelButton.page * tilesPerPage;
+         var level = levelPack.GetLevel(index);
+
+         if (level) {
+            levelButton.id.text = ""+(index+1);
+            levelButton.level = level;
+         } 
+
+         levelButton.gameObject.SetActive( (level != null) );
+      }
+   }
+
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
-
-   var index = 0;
-
-   var inexplicableOffset = pageSize/2.0 - (totalPages-1)*pageSize/2.0;
-
-   var minTileOffset = Mathf.Infinity;
-   var maxTileOffset = -Mathf.Infinity;
-
-   for (var child : Transform in selectedPackContent.transform) {
-      Destroy(child.gameObject);
-   }
-
-   for (var level in m_selectedPack.levels) {
-      var buttonInstance = GameObject.Instantiate(levelButtonPrefab).GetComponent.<LevelButton>();
-      buttonInstance.transform.SetParent(selectedPackContent);
-
-      var page = index / tilesPerPage;
-      var indexOnPage = index % tilesPerPage;
-      var row = indexOnPage/tilesPerRow + 1;
-      var column = (indexOnPage + tilesPerRow) % tilesPerRow;
-
-      var verticalPadding = 5;
-      var yOffset =  row * (-tileSize-tilePadding) + verticalPadding;
-
-      var pageOffset = (page-1)*pageSize + (page)*pagePadding;
-      var columnOffset =  (column) * (tileSize + tilePadding);
-      var horizontalPadding = 41 - 47*totalPages;
-      var xOffset = columnOffset + pageOffset + inexplicableOffset + horizontalPadding;
-
-      if (xOffset+tileSize > maxTileOffset) {
-         maxTileOffset = xOffset+tileSize;
-      }
-      if (xOffset < minTileOffset) {
-         minTileOffset = xOffset;
-      }
-
-      var rectTransform = buttonInstance.GetComponent.<RectTransform>();
-      rectTransform.anchoredPosition = new Vector3(xOffset, yOffset, 0);
-      rectTransform.localScale = Vector3.one;
-
-      buttonInstance.id.text = ""+level.id;
-      buttonInstance.level = level;
-
-      index += 1;
-   }
-
-
-
-
-   // Set up  the width of the scrolling rect.
-   var scrollingTransform = selectedPackContent.GetComponent.<RectTransform>();
-   scrollingTransform.sizeDelta.x = (maxTileOffset - minTileOffset) - pageSize;
+   Debug.Log(totalPages);
+   selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
+   selectedPackContent.anchoredPosition.x = 0;
 
    // Set up offsets for snapping.
    pageOffsets = new List.<int>();
-   var lastPageX = 502;
    for (var p = 0 ; p < totalPages ; ++p) {
-      pageOffsets.Add(lastPageX);
-      lastPageX += screenWidth/2;
+      pageOffsets.Add(screenWidth * p);
    }
 
 }
