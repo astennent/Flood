@@ -1,10 +1,10 @@
-#pragma downcast
+#pragma strict
 
 var levelPackScrollRect : UnityEngine.UI.ScrollRect;
-var levelPackContent : Transform;
+var levelPackContent : RectTransform;
 var levelPackButtonPrefab : GameObject;
 
-var selectedPackContent : Transform;
+var selectedPackContent : RectTransform;
 var levelButtonPrefab : GameObject;
 
 var levelPackTitle : UnityEngine.UI.Text;
@@ -63,7 +63,7 @@ function Update() {
       wasTouching = false;
    }
 
-   var inertiaLag : float = .1; // Time in seconds before snap kicks in.
+   var inertiaLag : float = .2; // Time in seconds before snap kicks in.
    var timeSinceRelease = Time.time - releaseTime;
    if (timeSinceRelease < inertiaLag) {
       return;
@@ -122,7 +122,7 @@ function SelectLevelPack(levelPack : LevelPack) {
 
    for (var pageTransform : Transform in selectedPackContent.transform) {
       for (var buttonTransform : Transform in pageTransform) {
-         levelButton = buttonTransform.GetComponent.<LevelButton>();
+         var levelButton = buttonTransform.GetComponent.<LevelButton>();
          var index = levelButton.index + levelButton.page * tilesPerPage;
          var level = levelPack.GetLevel(index);
 
@@ -136,7 +136,6 @@ function SelectLevelPack(levelPack : LevelPack) {
    }
 
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
-   Debug.Log(totalPages);
    selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
    selectedPackContent.anchoredPosition.x = 0;
 

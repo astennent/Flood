@@ -11,6 +11,7 @@ class Board extends MonoBehaviour {
    public var scrollbarThumb : ScrollThumb;
    public var colorTiles : List.<ColorTile>;
    public var sizeTiles : List.<SizeTile>;
+   public var numColorTiles : List.<NumColorTile>;
    public var scrollThumb : ScrollThumb;
    private var scoreController : ScoreController;
 
@@ -51,12 +52,7 @@ class Board extends MonoBehaviour {
    function SetNumColorsSkipPrompt(numColors : int) {
       m_numColors = numColors;
       Regenerate();
-
-      scrollbarThumb.setNumColors(numColors);
-      for (colorTile in colorTiles) {
-         var shouldEnable = (colorTile.colorIndex < numColors);
-         colorTile.SetEnabled(shouldEnable);
-      }
+      RefreshNumColorButtons();
    }
    function GetNumColors() {
       return (m_level) ? m_level.numColors : m_numColors;
@@ -236,6 +232,7 @@ class Board extends MonoBehaviour {
       }
       m_level = level;
       Regenerate();
+      RefreshNumColorButtons();
    }
 
    function LoadZen() {
@@ -245,17 +242,27 @@ class Board extends MonoBehaviour {
          ActivateTileButtons(true);
       }
       Regenerate();
+      RefreshNumColorButtons();
    }
 
    private function ActivateTileButtons(isEnabled : boolean) {
       for (var sizeTile in sizeTiles) {
          sizeTile.gameObject.SetActive(isEnabled);
       }
-      for (var colorTile in colorTiles) {
-         colorTile.gameObject.SetActive(isEnabled);
+      for (var numColorTile in numColorTiles) {
+         numColorTile.gameObject.SetActive(isEnabled);
       }
       scrollbarThumb.gameObject.SetActive(isEnabled);
    } 
+
+   private function RefreshNumColorButtons() {
+      var numColors = GetNumColors();
+      scrollbarThumb.setNumColors(numColors);
+      for (colorTile in colorTiles) {
+         var shouldEnable = (colorTile.colorIndex < numColors);
+         colorTile.SetEnabled(shouldEnable);
+      }
+   }
 
    function Regenerate() {
       for (var tileRow in m_tiles) {
