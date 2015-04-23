@@ -19,9 +19,6 @@ static var screenWidth = 1080;
 
 var levelButtons : List.<LevelButton>;
 
-// Calculated when a page is made.
-var pageOffsets = new List.<int>();
-
 function Start() {
    LoadLevelPacks();
 }
@@ -38,48 +35,27 @@ function LoadLevelPacks() {
 
 var releaseTime : float = 0;
 var wasTouching = false;
+private var desiredPage = 0;
 function Update() {
-   if (pageOffsets.Count == 0) {
+   if (!m_selectedPack) {
       return;
    }
 
-   var isTouching = Input.GetMouseButton(0);
-   //var touchEnded = Input.GetMouseButtonUp(0);
-   for (var touch in Input.touches) {
-      if (touch.phase != TouchPhase.Ended && touch.phase != TouchPhase.Canceled) {
-          isTouching = true;
-      } 
+   var scrollDirection = InputController.getInputDirection();
+   if (scrollDirection == InputController.LEFT) {
+      desiredPage += 1;
+   } else if (scrollDirection == InputController.RIGHT) {
+      desiredPage -= 1;
    }
 
-   if (isTouching) {
-      levelPackScrollRect.inertia = true;
-      wasTouching = true;
-      return;
-   }
-
-
-   if (!isTouching && wasTouching) {
-      releaseTime = Time.time;
-      wasTouching = false;
-   }
-
-   var inertiaLag : float = .2; // Time in seconds before snap kicks in.
-   var timeSinceRelease = Time.time - releaseTime;
-   if (timeSinceRelease < inertiaLag) {
-      return;
-   }
+   var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
+   desiredPage = Mathf.Clamp(desiredPage, 0, totalPages-1);
 
    var contentRect = selectedPackContent.GetComponent.<RectTransform>();
    var currentPosition = contentRect.anchoredPosition.x;
-   var smallestDistance = Mathf.Infinity;
-   var targetPosition = 0;
-   for (var offset in pageOffsets) {
-      var dist = Mathf.Abs(currentPosition - offset);
-      if (dist < smallestDistance) {
-         targetPosition = offset;
-         smallestDistance = dist;
-      }
-   }
+   var targetPosition = (totalPages - desiredPage -1) * screenWidth;
+
+   Debug.Log(targetPosition);
 
    if (currentPosition == targetPosition) {
       return;
@@ -91,7 +67,7 @@ function Update() {
    }
 
    levelPackScrollRect.inertia = false;
-   var lerpSpeed = Time.time - releaseTime;
+   var lerpSpeed = 0.5;
    contentRect.anchoredPosition.x = Mathf.Lerp(contentRect.anchoredPosition.x, targetPosition, lerpSpeed);
 }
 
@@ -137,12 +113,4 @@ function SelectLevelPack(levelPack : LevelPack) {
 
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
    selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
-   selectedPackContent.anchoredPosition.x = 0;
-
-   // Set up offsets for snapping.
-   pageOffsets = new List.<int>();
-   for (var p = 0 ; p < totalPages ; ++p) {
-      pageOffsets.Add(screenWidth * p);
-   }
-
 }

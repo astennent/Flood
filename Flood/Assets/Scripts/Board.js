@@ -227,17 +227,6 @@ class Board extends MonoBehaviour {
       m_undoStack.RemoveLast();
    }
 
-
-   // function LoadLevel(level : Level) {
-   //    if (m_level == null) {
-   //       zenSeed = Random.value;
-   //       ActivateTileButtons(false);
-   //    }
-   //    m_level = level;
-   //    Regenerate();
-   //    RefreshNumColorButtons();
-   // }
-
    function LoadZen() {
       LoadLevel(null);
    }
