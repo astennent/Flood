@@ -78,6 +78,7 @@ class Board extends MonoBehaviour {
       m_size = 15;
       m_numColors = 5;
       scoreController = GetComponent.<ScoreController>();
+      Regenerate();
    }
 
    function GetTile(y : int, x : int) {
@@ -106,7 +107,6 @@ class Board extends MonoBehaviour {
       if (!neighbor || m_floodedTiles.Contains(neighbor)) {
          return true;
       }
-
 
       if (neighbor.getColor() == targetColor) {
          if (m_undoStack.Count > 0) {
@@ -183,6 +183,9 @@ class Board extends MonoBehaviour {
       if (Input.GetKeyDown(KeyCode.H)) {
          CalculateHint();
       }
+      if (Input.GetKeyDown(KeyCode.O)) {
+         CalculateOptimal();
+      }
    }
 
    function Undo() {
@@ -225,25 +228,35 @@ class Board extends MonoBehaviour {
    }
 
 
-   function LoadLevel(level : Level) {
-      if (m_level == null) {
-         zenSeed = Random.value;
-         ActivateTileButtons(false);
-      }
-      m_level = level;
-      Regenerate();
-      RefreshNumColorButtons();
-   }
+   // function LoadLevel(level : Level) {
+   //    if (m_level == null) {
+   //       zenSeed = Random.value;
+   //       ActivateTileButtons(false);
+   //    }
+   //    m_level = level;
+   //    Regenerate();
+   //    RefreshNumColorButtons();
+   // }
 
    function LoadZen() {
-      if (m_level != null) {
-         Random.seed = zenSeed;
-         m_level = null;
-         ActivateTileButtons(true);
-      }
-      Regenerate();
-      RefreshNumColorButtons();
+      LoadLevel(null);
    }
+
+   function LoadLevel(level : Level) {
+      if (!m_level && level) { // Zen to ~Zen
+         zenSeed = Random.value;
+      } else if (m_level && !level) { //~Zen to Zen
+         Random.seed = zenSeed;
+      }
+
+      if (m_level != level) {
+         m_level = level;
+         Regenerate();
+         ActivateTileButtons(level == null);
+         RefreshNumColorButtons();
+      }
+   }
+
 
    private function ActivateTileButtons(isEnabled : boolean) {
       for (var sizeTile in sizeTiles) {
@@ -278,6 +291,7 @@ class Board extends MonoBehaviour {
       m_tiles.Clear();
       m_borderTiles.Clear();
       m_floodedTiles.Clear();
+      m_undoStack.Clear();
 
       if (m_level) {
          Random.seed = m_level.seed;
@@ -358,11 +372,35 @@ class Board extends MonoBehaviour {
       GUI.Label(textRect, "This will end the game and reset the board. Continue?");
    }
 
+   function CalculateOptimal() {
+      var fullSize = GetSize() * GetSize();
+      var numSteps = 0;
+      while (true) {
+         var hintNode = CalculateHint();
+         if (hintNode.floodedCount == fullSize) {
+            numSteps += hintNode.depth;
+            break; 
+         }
+         m_hinting = true;
+         ProcessClick(hintNode.color);
+         numSteps += 1;
+      }
+
+      m_hinting = true;
+
+      for (var i = 0 ; i < numSteps ; ++i) {
+         Undo();
+      }
+
+      m_hinting = false;
+      Debug.Log(numSteps);
+   }
+
    function CalculateHint() {
       m_hinting = true;
       var hintNode = CalculateHint(0);
       m_hinting = false;
-      ProcessClick(hintNode.color);
+      return hintNode;
    }
 
    static var MAX_DEPTH = 3;

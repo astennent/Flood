@@ -7,17 +7,8 @@ class Level {
    var size : int = -1;
    var numColors : int = -1;
 
-   function Level(id : int) {
+   function Level(id : int, seedOffset : int) {
       this.id = id;
-      this.seed = id;
+      this.seed = id+seedOffset;
    }
-
-   function Level(id : int, size : int, numColors : int, optimal : int) {
-      this.id = id;
-      this.seed = id;
-      this.size = size;
-      this.numColors = numColors;
-      this.optimal = optimal;
-   }
-
 }
