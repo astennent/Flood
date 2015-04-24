@@ -1,10 +1,13 @@
 ﻿#pragma strict
 
+private static var lastMousePosition = Vector2.zero;
 private static var deltaPosition = Vector2.zero;
+private static var mouseDeltaPosition = Vector2.zero;
 private static var inputFrozen = false;
 private static var inputFreezeTime = 1.0;
 static var inputFreezeDelay : float = 0.0;
 static var sensitivity = 10;
+static var mouseSensitivity = 5;
 
 static var NONE = -1;
 static var UP = 0;
@@ -18,29 +21,49 @@ static function getInputDirection() {
 	}
 
 	if(Input.GetKeyDown(KeyCode.UpArrow)) {
-		return (UP);
+		return UP;
 	} 
 	if (Input.GetKeyDown(KeyCode.DownArrow)) {
-		return (DOWN);
+		return DOWN;
 	}
 	if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-		return (LEFT);
+		return LEFT;
 	}
 	if (Input.GetKeyDown(KeyCode.RightArrow)) {
-		return (RIGHT);
+		return RIGHT;
 	}
 
-	if (Input.touchCount == 0) {
+	if (Input.touchCount == 0 || Input.GetMouseButtonUp(0)) {
 		unfreezeInput();
 	}
 
-	if (Input.touchCount > 0 && !inputFrozen)  {
+	if (inputFrozen) {
+		return NONE;
+	}
+
+	if (Input.GetMouseButtonDown(0)) {
+		mouseDeltaPosition = Vector2.zero;
+	}
+
+	if (Input.touchCount > 0)  {
 		var touch = Input.GetTouch(0);
+		deltaPosition /= 2.0;
 		deltaPosition += touch.deltaPosition;
- 		if (deltaPosition.x > sensitivity || deltaPosition.x < -sensitivity || deltaPosition.y > sensitivity || deltaPosition.y < -sensitivity) {
- 			return extractDirection();
- 		}
-	} 
+	} else if (Input.GetMouseButton(0)) {
+		mouseDeltaPosition /= 2.0; // fade old values.
+		mouseDeltaPosition += Input.mousePosition-lastMousePosition;
+		lastMousePosition = Input.mousePosition;
+	}
+
+	var extractTouchDirection = (Input.touchCount == 0 && deltaPosition.magnitude > sensitivity);
+	if (extractTouchDirection) {
+		return extractDirection(true);
+	}
+
+	var extractMouseDirection = (Input.GetMouseButtonUp(0) && mouseDeltaPosition.magnitude > sensitivity);
+	if (extractMouseDirection) {
+		return extractDirection(false);
+	}
 
 	return NONE;
 }
@@ -53,25 +76,26 @@ static function freezeInput() {
 static function unfreezeInput() {
 	inputFrozen = false;
 	deltaPosition = Vector2.zero;
-
+	mouseDeltaPosition = Vector2.zero;
 }
 
-static function extractDirection() {
-	if (Mathf.Pow(deltaPosition.x, 2) > Mathf.Pow(deltaPosition.y, 2)) {
+static function extractDirection(useTouch : boolean) {
+	var delta = (useTouch) ? deltaPosition : mouseDeltaPosition;
+	Debug.Log(delta);
+	if (Mathf.Pow(delta.x, 2) > Mathf.Pow(delta.y, 2)) {
 		var direction: int;
-		if (deltaPosition.x > 0) {
+		if (delta.x > 0) {
 			direction = RIGHT;
 		} else {
 			direction = LEFT;
 		}
 	} else {
-		if (deltaPosition.y > 0) {
+		if (delta.y > 0) {
 			direction = UP;
 		} else {
 			direction = DOWN;
 		}
 	}
-	Debug.Log(direction);
 	freezeInput();
 	deltaPosition = Vector2.zero;
 	return direction;

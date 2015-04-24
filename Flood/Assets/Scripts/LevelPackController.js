@@ -47,16 +47,16 @@ function Update() {
    } else if (scrollDirection == InputController.RIGHT) {
       desiredPage -= 1;
    }
-
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
    desiredPage = Mathf.Clamp(desiredPage, 0, totalPages-1);
+
+   if (Input.touchCount > 0 || Input.GetMouseButton(0)) {
+      return;
+   }
 
    var contentRect = selectedPackContent.GetComponent.<RectTransform>();
    var currentPosition = contentRect.anchoredPosition.x;
    var targetPosition = (totalPages - desiredPage -1) * screenWidth;
-
-   Debug.Log(targetPosition);
-
    if (currentPosition == targetPosition) {
       return;
    }
@@ -67,7 +67,7 @@ function Update() {
    }
 
    levelPackScrollRect.inertia = false;
-   var lerpSpeed = 0.5;
+   var lerpSpeed = 0.3;
    contentRect.anchoredPosition.x = Mathf.Lerp(contentRect.anchoredPosition.x, targetPosition, lerpSpeed);
 }
 
@@ -94,7 +94,6 @@ function LoadPack(levelPack : LevelPack, index : int) {
 function SelectLevelPack(levelPack : LevelPack) {
    m_selectedPack = levelPack;
    levelPackTitle.text = m_selectedPack.title;
-
 
    for (var pageTransform : Transform in selectedPackContent.transform) {
       for (var buttonTransform : Transform in pageTransform) {
