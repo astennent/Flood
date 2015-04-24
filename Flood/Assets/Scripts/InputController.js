@@ -76,7 +76,6 @@ static function freezeInput() {
 static function unfreezeInput() {
 	inputFrozen = false;
 	deltaPosition = Vector2.zero;
-	mouseDeltaPosition = Vector2.zero;
 }
 
 static function extractDirection(useTouch : boolean) {
