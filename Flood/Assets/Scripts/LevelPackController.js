@@ -33,8 +33,7 @@ function LoadLevelPacks() {
 
 }
 
-var releaseTime : float = 0;
-var wasTouching = false;
+private var pageSetTime = 0;
 private var desiredPage = 0;
 function Update() {
    if (!m_selectedPack) {
@@ -43,32 +42,42 @@ function Update() {
 
    var scrollDirection = InputController.getInputDirection();
    if (scrollDirection == InputController.LEFT) {
-      desiredPage += 1;
+      SetPage(desiredPage + 1);
    } else if (scrollDirection == InputController.RIGHT) {
-      desiredPage -= 1;
-   }
-   var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
-   desiredPage = Mathf.Clamp(desiredPage, 0, totalPages-1);
-
-   if (Input.touchCount > 0 || Input.GetMouseButton(0)) {
-      return;
+      SetPage(desiredPage - 1);
    }
 
    var contentRect = selectedPackContent.GetComponent.<RectTransform>();
    var currentPosition = contentRect.anchoredPosition.x;
-   var targetPosition = (totalPages - desiredPage -1) * screenWidth;
-   if (currentPosition == targetPosition) {
+   var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
+   if (Input.GetMouseButtonUp(0) && scrollDirection == InputController.NONE) {
+      var closestPage : int = (currentPosition + screenWidth/2) / screenWidth;
+      SetPage(totalPages - closestPage - 1);
+      Debug.Log("2");
+   } 
+
+   // Let the scrollview handle scrolling.
+   if (Input.touchCount > 0 || Input.GetMouseButton(0)) {
       return;
    }
 
+   var targetPosition = (totalPages - desiredPage -1) * screenWidth;
    if (Mathf.Abs(currentPosition - targetPosition) < 10) {
       contentRect.anchoredPosition.x = targetPosition;
       return;
    }
 
-   levelPackScrollRect.inertia = false;
    var lerpSpeed = 0.3;
    contentRect.anchoredPosition.x = Mathf.Lerp(contentRect.anchoredPosition.x, targetPosition, lerpSpeed);
+}
+
+private function SetPage(page : int) {
+   if (Time.time - pageSetTime > .5) {
+      var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
+      page = Mathf.Clamp(page, 0, totalPages-1);
+      desiredPage = page;
+      pageSetTime = Time.time;
+   }
 }
 
 function LoadPack(levelPack : LevelPack, index : int) {
@@ -112,4 +121,7 @@ function SelectLevelPack(levelPack : LevelPack) {
 
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
    selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
+
+   var contentRect = selectedPackContent.GetComponent.<RectTransform>();
+   contentRect.anchoredPosition.x = (totalPages-1)*screenWidth;
 }

@@ -6,7 +6,7 @@ private static var mouseDeltaPosition = Vector2.zero;
 private static var inputFrozen = false;
 private static var inputFreezeTime = 1.0;
 static var inputFreezeDelay : float = 0.0;
-static var sensitivity = 10;
+static var sensitivity = 2;
 static var mouseSensitivity = 5;
 
 static var NONE = -1;
@@ -14,6 +14,8 @@ static var UP = 0;
 static var DOWN = 1;
 static var LEFT = 2;
 static var RIGHT = 3;
+
+static var horizontalOnly = true;
 
 static function getInputDirection() {
 	if (inputFrozen && Time.time - inputFreezeTime > inputFreezeDelay) {
@@ -75,13 +77,11 @@ static function freezeInput() {
 
 static function unfreezeInput() {
 	inputFrozen = false;
-	deltaPosition = Vector2.zero;
 }
 
 static function extractDirection(useTouch : boolean) {
 	var delta = (useTouch) ? deltaPosition : mouseDeltaPosition;
-	Debug.Log(delta);
-	if (Mathf.Pow(delta.x, 2) > Mathf.Pow(delta.y, 2)) {
+	if (horizontalOnly || Mathf.Pow(delta.x, 2) > Mathf.Pow(delta.y, 2)) {
 		var direction: int;
 		if (delta.x > 0) {
 			direction = RIGHT;
