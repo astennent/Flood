@@ -51,24 +51,55 @@ function Finish() {
    } else {
       nonRecordClearedText.Display();
    }
+
+
+   var oldStars = GetNumStars(board.GetLevel());
+   var earnedStars = calculateEarnedStars(m_currentMoves, board.GetCurrentOptimal());
+   if (earnedStars > oldStars) {
+      SetBestStars(earnedStars);
+   }
+
    clickAnywhereText.Display();
 }
 
-private function getKey() : String { 
-   var numColors = board.GetNumColors();
-   var size = board.GetSize();
+private static function calculateEarnedStars(moves : int, optimal : int) {
+   if (moves <= optimal) {
+      return 4;
+   } else if (moves == optimal + 1) {
+      return 3;
+   } else if (moves == optimal + 2) {
+      return 2; 
+   } else if (moves == optimal + 3) {
+      return 1;
+   }
+   return 0;
+}
+
+private function getStarsKey(level : Level) {
+   return getKey(level, true);
+}
+private function getKey(level : Level) : String {
+   return getKey(level, false);
+}
+private function getKey(level : Level, stars : boolean) : String {
+   var numColors = (level == null) ? board.GetNumColors() : level.numColors;
+   var size = (level == null) ? board.GetSize() : level.size;
    var key = numColors + "-" + size;
    
-   var level = board.GetLevel();
    if (level) {
       key += "-"+level.seed;
+   }
+
+   if (stars) {
+      key += "s";
    }
    
    return key;
 }
 
 private function GetBestScore() {
-   var key = getKey();
+   var level = board.GetLevel();
+   var key = getKey(level);
    var best = PlayerPrefs.GetInt(key);
    if (best == 0) {
       best = DEFAULT_BEST;
@@ -77,7 +108,20 @@ private function GetBestScore() {
 }
 
 private function SetBestScore() {
-   var key = getKey();
+   var level = board.GetLevel();
+   var key = getKey(level);
    PlayerPrefs.SetInt(key, m_currentMoves);
    UpdateBestText();
+}
+
+function GetNumStars(level : Level) {
+   var key = getStarsKey(level);
+   var numStars = PlayerPrefs.GetInt(key);
+   return numStars; 
+} 
+
+private function SetBestStars(earnedStars : int) {
+   var level = board.GetLevel();
+   var key = getStarsKey(level);
+   PlayerPrefs.SetInt(key, earnedStars);
 }

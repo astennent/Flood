@@ -30,8 +30,8 @@ class Board extends MonoBehaviour {
 
    // Each entry is a list of tiles that were flooded each turn.
    private var m_undoStack = new LinkedList.<UndoNode>() ;
-
    private var m_hinting : boolean = false;
+   private var m_optimal : int = 0;
 
    function GetLevel() {
       return m_level;
@@ -56,6 +56,9 @@ class Board extends MonoBehaviour {
    }
    function GetNumColors() {
       return (m_level) ? m_level.numColors : m_numColors;
+   }
+   function GetCurrentOptimal() {
+      return m_optimal;
    }
 
    function Prompt(callbackFunction : Function, param : int) {
@@ -312,6 +315,7 @@ class Board extends MonoBehaviour {
       floodFrom(firstTile, firstTile.getColor());
 
       scoreController.Reset();
+      m_optimal = CalculateOptimal();
    }
 
    function HasGameStarted() {
@@ -382,7 +386,7 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
-      Debug.Log(numSteps);
+      return numSteps;
    }
 
    function CalculateHint() {

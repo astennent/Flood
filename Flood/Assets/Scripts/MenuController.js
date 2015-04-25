@@ -18,7 +18,7 @@ var m_menus : UnityEngine.UI.Image[];
 private var m_currentMenuIndex : int;
 private var m_selectedPack : LevelPack;
 
-private static var s_instance : GameController;
+private static var s_instance : MenuController;
 
 function Start() {
    s_instance = this;
@@ -39,6 +39,7 @@ function OnBackButtonPressed() {
    switch(m_currentMenuIndex) {
       case MENU_NONE:
          if (s_instance.board.GetLevel()) {
+            s_instance.GetComponent.<LevelPackController>().RefreshLevelButtons();
             SetMenu(MENU_SELECTED_PACK);
          } else {
             SetMenu(MENU_MAIN);

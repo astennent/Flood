@@ -5,15 +5,17 @@ var levelPackContent : RectTransform;
 var levelPackButtonPrefab : GameObject;
 
 var selectedPackContent : RectTransform;
-var levelButtonPrefab : GameObject;
-
 var levelPackTitle : UnityEngine.UI.Text;
 
 var canvas : Canvas;
 
+var scoreController : ScoreController;
+
+var starsImages : UnityEngine.Sprite[];
+
 private var m_selectedPack : LevelPack;
 
-static var tilesPerRow = 5; // this...
+static var tilesPerRow = 5; 
 static var tilesPerPage = 35;
 static var screenWidth = 1080;
 
@@ -47,19 +49,18 @@ function Update() {
       SetPage(desiredPage - 1);
    }
 
+   // Let the scrollview handle scrolling.
+   if (Input.touchCount > 0 || Input.GetMouseButton(0)) {
+      return;
+   }
+
    var contentRect = selectedPackContent.GetComponent.<RectTransform>();
    var currentPosition = contentRect.anchoredPosition.x;
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
    if (Input.GetMouseButtonUp(0) && scrollDirection == InputController.NONE) {
       var closestPage : int = (currentPosition + screenWidth/2) / screenWidth;
       SetPage(totalPages - closestPage - 1);
-      Debug.Log("2");
    } 
-
-   // Let the scrollview handle scrolling.
-   if (Input.touchCount > 0 || Input.GetMouseButton(0)) {
-      return;
-   }
 
    var targetPosition = (totalPages - desiredPage -1) * screenWidth;
    if (Mathf.Abs(currentPosition - targetPosition) < 10) {
@@ -92,7 +93,7 @@ function LoadPack(levelPack : LevelPack, index : int) {
 
    buttonInstance.title.text = levelPack.title;
    buttonInstance.description.text = levelPack.description;
-   buttonInstance.completion.text = "0 / " + levelPack.count;
+   buttonInstance.completion.text = "X / " + levelPack.count*4;
 
    buttonInstance.levelPack = levelPack;
 
@@ -100,28 +101,41 @@ function LoadPack(levelPack : LevelPack, index : int) {
    scrollingTransform.sizeDelta = new Vector2(scrollingTransform.rect.width, rectTransform.rect.height * LevelDB.Packs.length);
 }
 
+// TODO: This is just to make sure the stars images are refreshed when pressing back.
+// This could be done more efficiently if you just check the button for the current level.
+function RefreshLevelButtons() {
+   for (var pageTransform : Transform in selectedPackContent.transform) {
+      for (var buttonTransform : Transform in pageTransform) {
+         var levelButton = buttonTransform.GetComponent.<LevelButton>();
+         DrawLevelButton(levelButton);
+      }
+   }
+}
+
 function SelectLevelPack(levelPack : LevelPack) {
    m_selectedPack = levelPack;
    levelPackTitle.text = m_selectedPack.title;
 
-   for (var pageTransform : Transform in selectedPackContent.transform) {
-      for (var buttonTransform : Transform in pageTransform) {
-         var levelButton = buttonTransform.GetComponent.<LevelButton>();
-         var index = levelButton.index + levelButton.page * tilesPerPage;
-         var level = levelPack.GetLevel(index);
+   RefreshLevelButtons();
 
-         if (level) {
-            levelButton.id.text = ""+(index+1);
-            levelButton.level = level;
-         } 
-
-         levelButton.gameObject.SetActive( (level != null) );
-      }
-   }
-
+   // Ensure the scroll area is the right size
    var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
    selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
 
+   // Scroll to the first page
    var contentRect = selectedPackContent.GetComponent.<RectTransform>();
    contentRect.anchoredPosition.x = (totalPages-1)*screenWidth;
+}
+
+private function DrawLevelButton(levelButton : LevelButton) {
+   var index = levelButton.index + levelButton.page * tilesPerPage;
+   var level = m_selectedPack.GetLevel(index);
+   if (level) {
+      levelButton.id.text = ""+(index+1);
+      levelButton.level = level;
+      var numStars = scoreController.GetNumStars(level);
+      levelButton.SetStarsImage(starsImages[numStars]);
+   } 
+
+   levelButton.gameObject.SetActive( (level != null) );
 }

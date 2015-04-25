@@ -11,4 +11,8 @@ class Level {
       this.id = id;
       this.seed = id+seedOffset;
    }
+
+   function GetStars() {
+      
+   }
 }
