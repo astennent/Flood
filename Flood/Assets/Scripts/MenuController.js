@@ -93,3 +93,7 @@ function OnClickLevel(levelButton : LevelButton) {
    s_instance.board.LoadLevel(levelButton.level);
    s_instance.SetMenu(MENU_NONE);
 }
+
+static function IsOnSelectedPack() {
+   return (s_instance.m_currentMenuIndex == MENU_SELECTED_PACK);
+}

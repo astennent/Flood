@@ -38,7 +38,7 @@ function LoadLevelPacks() {
 private var pageSetTime = 0;
 private var desiredPage = 0;
 function Update() {
-   if (!m_selectedPack) {
+   if (!m_selectedPack || !MenuController.IsOnSelectedPack()) {
       return;
    }
 
@@ -63,17 +63,19 @@ function Update() {
    } 
 
    var targetPosition = (totalPages - desiredPage -1) * screenWidth;
-   if (Mathf.Abs(currentPosition - targetPosition) < 10) {
+   if (Mathf.Abs(currentPosition - targetPosition) < 5) {
       contentRect.anchoredPosition.x = targetPosition;
       return;
    }
 
-   var lerpSpeed = 0.3;
+   var lerpSpeed = 0.2;
    contentRect.anchoredPosition.x = Mathf.Lerp(contentRect.anchoredPosition.x, targetPosition, lerpSpeed);
 }
 
 private function SetPage(page : int) {
+   Debug.Log("Setting: " + page);
    if (Time.time - pageSetTime > .5) {
+      Debug.Log("Actually Set");
       var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
       page = Mathf.Clamp(page, 0, totalPages-1);
       desiredPage = page;
@@ -123,8 +125,7 @@ function SelectLevelPack(levelPack : LevelPack) {
    selectedPackContent.sizeDelta = new Vector2(screenWidth * (totalPages-1), selectedPackContent.sizeDelta.y); 
 
    // Scroll to the first page
-   var contentRect = selectedPackContent.GetComponent.<RectTransform>();
-   contentRect.anchoredPosition.x = (totalPages-1)*screenWidth;
+   SetPage(0);
 }
 
 private function DrawLevelButton(levelButton : LevelButton) {

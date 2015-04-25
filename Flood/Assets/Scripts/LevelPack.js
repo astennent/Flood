@@ -19,12 +19,8 @@ class LevelPack {
    }
 
    function SetSize(size : int) {
-      for (var level in levels) {
-         level.size = size;
-      }
-      return this;
+      return SetSize([size]);
    }
-
    function SetNumColors(numColors : int) {
       return SetNumColors([numColors]);
    }
@@ -33,6 +29,13 @@ class LevelPack {
       for (var index = 0 ; index < levels.length ; ++index) {
          var numColorsIndex = index * numColorsArray.length / levels.length;
          levels[index].numColors = numColorsArray[numColorsIndex];
+      }
+      return this;
+   }
+   function SetSize(sizes : int[]) {
+      for (var index = 0 ; index < levels.length ; ++index) {
+         var sizeIndex = index * sizes.length / levels.length;
+         levels[index].size = sizes[sizeIndex];
       }
       return this;
    }

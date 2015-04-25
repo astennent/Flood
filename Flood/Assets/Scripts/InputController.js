@@ -4,7 +4,7 @@ private static var lastMousePosition = Vector2.zero;
 private static var deltaPosition = Vector2.zero;
 private static var mouseDeltaPosition = Vector2.zero;
 private static var inputFrozen = false;
-private static var inputFreezeTime = 1.0;
+private static var inputFreezeTime = .3;
 static var inputFreezeDelay : float = 0.0;
 static var sensitivity = 2;
 static var mouseSensitivity = 5;
@@ -33,10 +33,6 @@ static function getInputDirection() {
 	}
 	if (Input.GetKeyDown(KeyCode.RightArrow)) {
 		return RIGHT;
-	}
-
-	if (Input.touchCount == 0 || Input.GetMouseButtonUp(0)) {
-		unfreezeInput();
 	}
 
 	if (inputFrozen) {
