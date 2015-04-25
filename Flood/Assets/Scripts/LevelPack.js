@@ -46,5 +46,13 @@ class LevelPack {
       }
       return levels[index];
    }
+
+   function CountStars() {
+      var stars = 0;
+      for (var level in levels) {
+         stars += level.GetBestStars();
+      }
+      return stars;
+   }
 }
 

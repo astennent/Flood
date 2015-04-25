@@ -12,4 +12,8 @@ class Level {
       this.seed = id+seedOffset;
    }
 
+   function GetBestStars() {
+      return ScoreController.GetBestStars(this);
+   }
+
 }

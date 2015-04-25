@@ -9,8 +9,6 @@ var levelPackTitle : UnityEngine.UI.Text;
 
 var canvas : Canvas;
 
-var scoreController : ScoreController;
-
 var starsImages : UnityEngine.Sprite[];
 
 private var m_selectedPack : LevelPack;
@@ -73,9 +71,7 @@ function Update() {
 }
 
 private function SetPage(page : int) {
-   Debug.Log("Setting: " + page);
    if (Time.time - pageSetTime > .5) {
-      Debug.Log("Actually Set");
       var totalPages : int = m_selectedPack.levels.length/tilesPerPage;
       page = Mathf.Clamp(page, 0, totalPages-1);
       desiredPage = page;
@@ -95,7 +91,7 @@ function LoadPack(levelPack : LevelPack, index : int) {
 
    buttonInstance.title.text = levelPack.title;
    buttonInstance.description.text = levelPack.description;
-   buttonInstance.completion.text = "X / " + levelPack.count*4;
+   buttonInstance.completion.text = levelPack.CountStars() + " / " + levelPack.count*4;
 
    buttonInstance.levelPack = levelPack;
 
@@ -134,7 +130,7 @@ private function DrawLevelButton(levelButton : LevelButton) {
    if (level) {
       levelButton.id.text = ""+(index+1);
       levelButton.level = level;
-      var numStars = scoreController.GetNumStars(level);
+      var numStars = level.GetBestStars();
       levelButton.SetStarsImage(starsImages[numStars]);
    } 
 

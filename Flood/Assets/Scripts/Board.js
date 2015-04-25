@@ -74,8 +74,6 @@ class Board extends MonoBehaviour {
       m_promptEnabled = true;
    }
 
-
-
    function Start () {
       zenSeed = Random.value * Mathf.Infinity;
       m_size = 15;

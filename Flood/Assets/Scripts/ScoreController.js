@@ -1,6 +1,7 @@
 ﻿#pragma strict
 
-private var m_currentMoves = 0;
+private static var s_currentMoves = 0;
+private static var s_instance : ScoreController;
 public var board : Board;
 
 public var bestText : TextMesh;
@@ -12,12 +13,16 @@ var recordClearedText : ClearedText;
 var nonRecordClearedText : ClearedText;
 var clickAnywhereText : ClearedText;
 
-function GetCurrentMoves() {
-   return m_currentMoves;
+function Start() {
+   s_instance = this;
+}
+
+static function GetCurrentMoves() {
+   return s_currentMoves;
 }
 
 function Reset() {
-   m_currentMoves = 0;
+   s_currentMoves = 0;
    UpdateBestText();
    UpdateCurrentMovesText();
    clickAnywhereText.Hide();
@@ -28,7 +33,7 @@ private function UpdateBestText() {
 }
 
 private function UpdateCurrentMovesText() {
-   setText(currentText, m_currentMoves);
+   setText(currentText, s_currentMoves);
 }
 
 private function setText(textMesh : TextMesh, score : int) {
@@ -40,12 +45,12 @@ private function setText(textMesh : TextMesh, score : int) {
 }
 
 function Increment() {
-   m_currentMoves += 1;
+   s_currentMoves += 1;
    UpdateCurrentMovesText();
 }
 
 function Finish() {
-   if (m_currentMoves < GetBestScore()) {
+   if (s_currentMoves < GetBestScore()) {
       recordClearedText.Display();
       SetBestScore();
    } else {
@@ -53,8 +58,8 @@ function Finish() {
    }
 
 
-   var oldStars = GetNumStars(board.GetLevel());
-   var earnedStars = calculateEarnedStars(m_currentMoves, board.GetCurrentOptimal());
+   var oldStars = GetBestStars(board.GetLevel());
+   var earnedStars = calculateEarnedStars(s_currentMoves, board.GetCurrentOptimal());
    if (earnedStars > oldStars) {
       SetBestStars(earnedStars);
    }
@@ -75,15 +80,15 @@ private static function calculateEarnedStars(moves : int, optimal : int) {
    return 0;
 }
 
-private function getStarsKey(level : Level) {
+private static function getStarsKey(level : Level) {
    return getKey(level, true);
 }
-private function getKey(level : Level) : String {
+private static function getKey(level : Level) : String {
    return getKey(level, false);
 }
-private function getKey(level : Level, stars : boolean) : String {
-   var numColors = (level == null) ? board.GetNumColors() : level.numColors;
-   var size = (level == null) ? board.GetSize() : level.size;
+private static function getKey(level : Level, stars : boolean) : String {
+   var numColors = (level == null) ? s_instance.board.GetNumColors() : level.numColors;
+   var size = (level == null) ? s_instance.board.GetSize() : level.size;
    var key = numColors + "-" + size;
    
    if (level) {
@@ -110,11 +115,11 @@ private function GetBestScore() {
 private function SetBestScore() {
    var level = board.GetLevel();
    var key = getKey(level);
-   PlayerPrefs.SetInt(key, m_currentMoves);
+   PlayerPrefs.SetInt(key, s_currentMoves);
    UpdateBestText();
 }
 
-function GetNumStars(level : Level) {
+static function GetBestStars(level : Level) {
    var key = getStarsKey(level);
    var numStars = PlayerPrefs.GetInt(key);
    return numStars; 
