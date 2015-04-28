@@ -268,10 +268,10 @@ class Board extends MonoBehaviour {
    }
 
    // Flips tiles when color theme changes
-   function RefreshAllTiles() {
+   function OnThemeChange() {
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
-            tile.setColor(tile.getColor(), Vector2.zero, m_hinting);
+            tile.OnThemeChange();
          }
       }
       RefreshNumColorButtons();

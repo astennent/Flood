@@ -29,5 +29,5 @@ public function SetColors(themeButton : ThemeButton) {
       }
    }
    RefreshColorMaterials(themeButton.colors, themeButton.material);
-   board.RefreshAllTiles();
+   board.OnThemeChange();
 }

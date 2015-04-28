@@ -33,7 +33,8 @@ class Tile extends MonoBehaviour {
       gridPosition = new Vector2(x,y);
       desiredRotation = transform.rotation;
       m_originalColor = (Random.Range(0, 1.0) * numColors);
-      setColor(m_originalColor, Vector2.zero, false);
+      setColor(m_originalColor, gridPosition, false);
+      flipStartTime+=Random.Range(0.0, .5);
    }
 
    private function updateZ(elapsedTime : float) {
@@ -76,8 +77,17 @@ class Tile extends MonoBehaviour {
       flipStartTime -= delay;
    }
 
-   // Returns the time offset so that the board can avoid delay when clicking far away.
+
+   public function OnThemeChange() {
+      setColor(m_colorIndex, gridPosition*Random.Range(0.0, 2.0), false, true);
+   }
+
    public function setColor(colorIndex : int, clickOrigin : Vector2, isHinting : boolean) {
+      return setColor(colorIndex, clickOrigin, isHinting, false);
+   }
+
+   // Returns the time offset so that the board can avoid delay when clicking far away.
+   public function setColor(colorIndex : int, clickOrigin : Vector2, isHinting : boolean, isRefreshing : boolean) {
 
       if (isHinting) {
          m_colorIndex = colorIndex;
@@ -108,7 +118,7 @@ class Tile extends MonoBehaviour {
       m_back = temp;
 
       // Don't flip if you're already the right color
-      if (m_colorIndex == colorIndex) {
+      if (m_colorIndex == colorIndex && !isRefreshing) {
          transform.rotation = desiredRotation;
       } else {
          m_colorIndex = colorIndex;
