@@ -1,35 +1,32 @@
-public static var colors = [
-   Color.red,
-   Color.green,
-   Color.blue,
-   Color.yellow,
-   Color.cyan,
-   Color.magenta,
-   new Color(1, .4, 0) //orange
-];
-
 /* It is faster to store a list of pre-made materials and swap them out when needed than to create
    a new material every time a Tile is instantiated or flipped. So we store the list of all 
    usable colors as materials here, where the materials can be accessed quickly at runtime. */
 public static var colorMaterials : List.<Material>;
-public var tileMaterial : Material;
+public static var colors : Color[];
+private static var THEME_KEY = "theme";
 
-public static var s_instance : ColorController;
-
+var themes : ThemeButton[];
 function Start() {
-   s_instance = this;
-   RefreshColorMaterials();
+   var savedThemeIndex = PlayerPrefs.GetInt(THEME_KEY);
+   Debug.Log(savedThemeIndex);
+   var defaultTheme = themes[savedThemeIndex];
+   RefreshColorMaterials(defaultTheme.colors, defaultTheme.material);
 }
 
-static function RefreshColorMaterials() {
+static function RefreshColorMaterials(colors : Color[], material : Material) {
    colorMaterials = new List.<Material>();
    for (var i = 0 ; i < colors.length ; i++) {
-      colorMaterials.Add(new Material(s_instance.tileMaterial));
+      colorMaterials.Add(new Material(material));
       colorMaterials[i].SetColor("_Color", colors[i]);
    }
 }
 
 public function SetColors(themeButton : ThemeButton) {
-   colors = themeButton.colors;
-   RefreshColorMaterials();
+   for (var i = 0 ; i < themes.length ; ++i) {
+      if (themeButton == themes[i]) {
+         PlayerPrefs.SetInt(THEME_KEY, i);
+         break;
+      }
+   }
+   RefreshColorMaterials(themeButton.colors, themeButton.material);
 }

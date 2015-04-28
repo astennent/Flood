@@ -2,6 +2,7 @@
 
 var colorImages : UnityEngine.UI.Image[];
 var colors : Color[];
+var material : Material;
 
 
 function Start() {
