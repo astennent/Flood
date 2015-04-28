@@ -5,10 +5,10 @@ public static var colorMaterials : List.<Material>;
 public static var colors : Color[];
 private static var THEME_KEY = "theme";
 
+var board : Board;
 var themes : ThemeButton[];
 function Start() {
    var savedThemeIndex = PlayerPrefs.GetInt(THEME_KEY);
-   Debug.Log(savedThemeIndex);
    var defaultTheme = themes[savedThemeIndex];
    RefreshColorMaterials(defaultTheme.colors, defaultTheme.material);
 }
@@ -29,4 +29,5 @@ public function SetColors(themeButton : ThemeButton) {
       }
    }
    RefreshColorMaterials(themeButton.colors, themeButton.material);
+   board.RefreshAllTiles();
 }
