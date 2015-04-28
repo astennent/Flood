@@ -14,10 +14,22 @@ public static var colors = [
 public static var colorMaterials : List.<Material>;
 public var tileMaterial : Material;
 
+public static var s_instance : ColorController;
+
 function Start() {
+   s_instance = this;
+   RefreshColorMaterials();
+}
+
+static function RefreshColorMaterials() {
    colorMaterials = new List.<Material>();
    for (var i = 0 ; i < colors.length ; i++) {
-      colorMaterials.Add(new Material(tileMaterial));
+      colorMaterials.Add(new Material(s_instance.tileMaterial));
       colorMaterials[i].SetColor("_Color", colors[i]);
    }
+}
+
+public function SetColors(themeButton : ThemeButton) {
+   colors = themeButton.colors;
+   RefreshColorMaterials();
 }
