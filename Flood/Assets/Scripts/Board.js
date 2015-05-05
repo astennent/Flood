@@ -31,6 +31,7 @@ class Board extends MonoBehaviour {
    // Each entry is a list of tiles that were flooded each turn.
    private var m_undoStack = new LinkedList.<UndoNode>() ;
    private var m_hinting : boolean = false;
+   private var m_officialClone : Board;
    private var m_optimal : int = 0;
    private static var s_mainBoard : Board;
 
@@ -331,6 +332,7 @@ class Board extends MonoBehaviour {
       m_optimal = 0;
       optimalText.text = "---";
       var clone = CloneBoard();
+      m_officialClone = clone;
       clone.CalculateOptimal();
    }
 
@@ -351,8 +353,10 @@ class Board extends MonoBehaviour {
 
 //////////////////////////////
 
-   function SetOptimal(numSteps : int) {
-      m_optimal = numSteps;
+   function SetOptimal(cloneBoard : Board, numSteps : int) {
+      if (cloneBoard == m_officialClone) {
+         m_optimal = numSteps;
+      }
    }
 
    function CloneBoard() : Board {
@@ -405,7 +409,7 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
-      s_mainBoard.SetOptimal(numSteps);
+      s_mainBoard.SetOptimal(this, numSteps);
    }
 
    function CalculateHint() {
