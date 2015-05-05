@@ -68,6 +68,11 @@ class Board extends MonoBehaviour {
 
    function Prompt(callbackFunction : Function, param : int) {
 
+      // Don't process anything if you clicked through a menu.
+      if (!MenuController.IsOnGame()) {
+         return;
+      }
+
       // If they just started or finished the game, don't prompt.
       if (!HasGameStarted() || HasGameEnded()) {
          callbackFunction(param);
