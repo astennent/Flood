@@ -75,11 +75,11 @@ function Finish() {
 private static function calculateEarnedStars(moves : int, optimal : int) {
    if (moves <= optimal) {
       return 4;
-   } else if (moves == optimal + 1) {
+   } else if (moves <= optimal + 1) {
       return 3;
-   } else if (moves == optimal + 2) {
+   } else if (moves <= optimal + 3) {
       return 2; 
-   } else if (moves == optimal + 3) {
+   } else if (moves <= optimal + 5) {
       return 1;
    }
    return 0;
