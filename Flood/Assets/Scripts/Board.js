@@ -4,6 +4,7 @@ import System.Collections.Generic;
 
 class Board extends MonoBehaviour {
 
+   var isOriginal = true;
    var m_tiles = new List.<List.<Tile> >();
    var m_borderTiles = new HashSet.<Tile>();
    var m_floodedTiles = new HashSet.<Tile>();
@@ -31,6 +32,10 @@ class Board extends MonoBehaviour {
    private var m_undoStack = new LinkedList.<UndoNode>() ;
    private var m_hinting : boolean = false;
    private var m_optimal : int = 0;
+   private static var s_mainBoard : Board;
+
+   public var optimalText : TextMesh;
+
 
    function GetLevel() {
       return m_level;
@@ -71,15 +76,19 @@ class Board extends MonoBehaviour {
       m_promptCallback = callbackFunction;
       m_promptCallbackParam = param;
 
-      MenuController.SetMenu(MenuController.MENU_CONFIRM);
+      MenuController.SwitchToConfirm();
    }
 
    function ExecutePromptCallback() {
-      MenuController.SetMenu(MenuController.MENU_GAME);
+      MenuController.SwitchToGame();
       m_promptCallback(m_promptCallbackParam);
    }
 
-   function Start () {
+   function Start() {
+      if (!isOriginal) {
+         return;
+      }
+      s_mainBoard = this;
       zenSeed = Random.value * Mathf.Infinity;
       m_size = 15;
       m_numColors = 5;
@@ -152,7 +161,7 @@ class Board extends MonoBehaviour {
       var origin : Vector2 = new Vector2(tileX, tileY);
       var minDelay = Mathf.Infinity; // big number.
       for (var tile in m_floodedTiles) {
-         var tileDelay = tile.setColor(targetColor, origin, m_hinting);
+         var tileDelay = tile.setColor(targetColor, origin);
          if (tileDelay < minDelay) {
             minDelay = tileDelay;
          }
@@ -183,14 +192,12 @@ class Board extends MonoBehaviour {
    }
 
    function Update() {
-      if (Input.GetKeyDown(KeyCode.U)) {
-         Undo();
+      if (m_optimal != 0) {
+         optimalText.text = ""+m_optimal;
       }
-      if (Input.GetKeyDown(KeyCode.H)) {
-         CalculateHint();
-      }
-      if (Input.GetKeyDown(KeyCode.O)) {
-         CalculateOptimal();
+
+      if (!isOriginal) {
+         Destroy(gameObject);
       }
    }
 
@@ -227,10 +234,11 @@ class Board extends MonoBehaviour {
       }     
 
       for (var tile in m_floodedTiles) {
-         tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()), m_hinting);
+         tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()));
       } 
 
       m_undoStack.RemoveLast();
+      scoreController.Decrement();
    }
 
    function LoadZen() {
@@ -314,13 +322,14 @@ class Board extends MonoBehaviour {
          m_tiles.Add(tileRow);
       }
 
-      var firstTile = m_tiles[0][0];
-      m_floodedTiles.Add(firstTile);
-      m_borderTiles.Add(firstTile);
-      floodFrom(firstTile, firstTile.getColor());
+      DoInitialFlood();
 
       scoreController.Reset();
-      CalculateOptimal();
+
+      m_optimal = 0;
+      optimalText.text = "---";
+      var clone = CloneBoard();
+      clone.CalculateOptimal();
    }
 
    function HasGameStarted() {
@@ -331,9 +340,43 @@ class Board extends MonoBehaviour {
       return (m_borderTiles.Count == 0);
    }
 
+   function DoInitialFlood() {
+      var firstTile = m_tiles[0][0];
+      m_floodedTiles.Add(firstTile);
+      m_borderTiles.Add(firstTile);
+      floodFrom(firstTile, firstTile.getColor());
+   }
+
+//////////////////////////////
+
+   function SetOptimal(numSteps : int) {
+      m_optimal = numSteps;
+   }
+
+   function CloneBoard() : Board {
+      var clone = GameObject.Instantiate(Prefabs.getBoardPrefab(), 
+            Vector3.zero, transform.rotation).GetComponent.<Board>();
+      clone.m_numColors = m_numColors;
+      clone.m_size = m_size;
+      clone.m_level = m_level;
+      var clonedTiles = List.<List.<Tile> >();
+      for (var tileRow in m_tiles) {
+         var cloneRow = new List.<Tile>();
+         for (var tile in tileRow) {
+            var cloneTile = new Tile(tile.x(), tile.y(), tile.getColor());
+            cloneRow.Add(cloneTile);
+         }
+         clonedTiles.Add(cloneRow);
+      }
+      clone.m_tiles = clonedTiles;
+
+      clone.DoInitialFlood();
+      return clone;
+   }
+
    function CalculateOptimal() {
-      // var thread = System.Threading.Thread(CalculateOptimalHelper);
-      // thread.Start();
+      var thread = System.Threading.Thread(CalculateOptimalHelper);
+      thread.Start();
    }
 
    private function CalculateOptimalHelper() { 
@@ -360,8 +403,7 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
-      m_optimal = numSteps;
-      Debug.Log(m_optimal);
+      s_mainBoard.SetOptimal(numSteps);
    }
 
    function CalculateHint() {
@@ -397,7 +439,6 @@ class Board extends MonoBehaviour {
                bestFloodedCount = hintNode.floodedCount;
             }
          }
-
 
          Undo();
       }

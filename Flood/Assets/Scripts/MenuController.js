@@ -66,7 +66,7 @@ function OnBackButtonPressed() {
    }
 }
 
-static function SetMenu(menuIndex : int) {
+function SetMenu(menuIndex : int) {
    s_instance.m_menus[s_instance.m_currentMenuIndex].gameObject.SetActive(false);
    s_instance.m_currentMenuIndex = menuIndex;
    var menu = s_instance.m_menus[menuIndex];
@@ -92,8 +92,12 @@ static function IsOnSelectedPack() {
    return (s_instance.m_currentMenuIndex == MENU_SELECTED_PACK);
 }
 
-function SwitchToGame() {
-   SetMenu(MENU_GAME);
+static function SwitchToGame() {
+   s_instance.SetMenu(MENU_GAME);
+}
+
+static function SwitchToConfirm() {
+   s_instance.SetMenu(MENU_CONFIRM);
 }
 
 static function IsOnGame() {

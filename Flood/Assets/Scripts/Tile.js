@@ -13,7 +13,13 @@ class Tile {
       gridPosition = new Vector2(x,y);
       m_originalColor = (Random.Range(0.0, 1.0) * numColors);
       m_colorIndex = m_originalColor; 
-      m_tileObject.setColor(m_originalColor, Random.Range(0, 0.8));
+      m_tileObject.setColor(m_originalColor, Random.Range(0, 0.5));
+   }
+
+   function Tile(x : int, y : int, color : int) {
+      m_originalColor = color;
+      m_colorIndex = color;
+      gridPosition = new Vector2(x,y);
    }
 
    function Destroy() {
@@ -21,7 +27,10 @@ class Tile {
    }
 
    public function revert() {
-      m_tileObject.setColor(m_originalColor, 0);
+      m_colorIndex = m_originalColor;
+      if (m_tileObject) {
+         m_tileObject.setColor(m_originalColor, 0);
+      }
    }
 
    public function getColor() {
@@ -36,19 +45,23 @@ class Tile {
    }
 
    public function decreaseAnimationDelay(delay : float) {
-      m_tileObject.decreaseAnimationDelay(delay);
+      if (m_tileObject) {
+         m_tileObject.decreaseAnimationDelay(delay);
+      }
    }
 
-   public function setColor(colorIndex : int, clickOrigin : Vector2, isHinting : boolean) {
+   public function setColor(colorIndex : int, clickOrigin : Vector2) {
       m_colorIndex = colorIndex;
       // TODO: Don't flip if you're already the right color
       var animationDelay : float = Vector2.Distance(gridPosition, clickOrigin)/30.0;
-      m_tileObject.setColor(colorIndex, animationDelay);
+      if (m_tileObject) {
+         m_tileObject.setColor(colorIndex, animationDelay);
+      }
       return animationDelay;
    }
 
    public function OnThemeChange() {
-      m_tileObject.setColor(m_colorIndex, Random.Range(0.0, 2.0));
+      m_tileObject.setColor(m_colorIndex, Random.Range(0.0, 1.0));
    }
 
 }

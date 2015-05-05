@@ -7,6 +7,10 @@ function Start() {
 }
 
 function OnMouseDown() {
+   if (!MenuController.IsOnGame()) {
+      return;
+   }
+
    var zPosition = -Camera.main.transform.position.z; // distance from camera to 0.
    var mousePosition = Input.mousePosition;
    mousePosition.y = Screen.height - mousePosition.y; // Stupid unity.

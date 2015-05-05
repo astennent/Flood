@@ -49,6 +49,11 @@ function Increment() {
    UpdateCurrentMovesText();
 }
 
+function Decrement() {
+   s_currentMoves -= 1;
+   UpdateCurrentMovesText();
+}
+
 function Finish() {
    if (s_currentMoves < GetBestScore()) {
       recordClearedText.Display();
