@@ -19,7 +19,6 @@ class Board extends MonoBehaviour {
    private var m_numColors : int; // For Zen
    private var m_level : Level;
 
-   private var m_promptEnabled = false;
    private var m_promptCallback : Function;
    private var m_promptCallbackParam : int;
 
@@ -71,7 +70,13 @@ class Board extends MonoBehaviour {
 
       m_promptCallback = callbackFunction;
       m_promptCallbackParam = param;
-      m_promptEnabled = true;
+
+      MenuController.SetMenu(MenuController.MENU_CONFIRM);
+   }
+
+   function ExecutePromptCallback() {
+      MenuController.SetMenu(MenuController.MENU_GAME);
+      m_promptCallback(m_promptCallbackParam);
    }
 
    function Start () {
@@ -324,45 +329,6 @@ class Board extends MonoBehaviour {
 
    function HasGameEnded() {
       return (m_borderTiles.Count == 0);
-   }
-
-   function OnGUI() {
-
-      if (!m_promptEnabled) {
-         return;
-      }
-
-      GUI.skin = m_guiSkin;
-
-      // Draw background box.
-      var width = Screen.width*3/4;
-      var height = Screen.height*2/5;
-      var boxLeft = Screen.width*1/8;
-      var boxTop = height/2;
-      var backgroundRect = new Rect(boxLeft, boxTop, width, height);
-      GUI.Box(backgroundRect, "");
-
-      // Draw buttons
-      var buttonPadding = width/12;
-      var buttonHeight = height/4;
-      var buttonWidth = width * 3.0 / 8.0;
-      var buttonTop = boxTop + height - buttonHeight - buttonPadding;
-      var buttonRect = new Rect(boxLeft + buttonPadding, buttonTop, buttonWidth, buttonHeight);
-      if (GUI.Button(buttonRect, "Continue") ) {
-         m_promptEnabled = false;
-         m_promptCallback(m_promptCallbackParam);
-      }
-
-      buttonRect.x += buttonWidth + buttonPadding;
-      if (GUI.Button(buttonRect, "Cancel") ) {
-         m_promptEnabled = false;
-      }
-
-      var textWidth = width - 2*buttonPadding;
-      var textHeight = buttonTop - boxTop - buttonPadding;
-      var textRect = new Rect(boxLeft + buttonPadding, boxTop + buttonPadding, textWidth, textHeight);
-      GUI.color = new Color(.1, .1, .1);
-      GUI.Label(textRect, "This will end the game and reset the board. Continue?");
    }
 
    function CalculateOptimal() {
