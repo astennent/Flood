@@ -4,7 +4,7 @@
 class Prefabs extends MonoBehaviour {
 
    static var s_instance : Prefabs;
-   public var tilePrefab : Tile;
+   public var tilePrefab : TileObject;
 
 	function Start () {
 	  s_instance = this;

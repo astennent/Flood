@@ -198,7 +198,7 @@ class Board extends MonoBehaviour {
       var toRevert = lastUndoNode.tiles;
 
       for (var revertedTile in toRevert) {
-         revertedTile.revert(m_hinting);
+         revertedTile.revert();
          m_floodedTiles.Remove(revertedTile);
          m_borderTiles.Remove(revertedTile);
       }
@@ -280,7 +280,7 @@ class Board extends MonoBehaviour {
    function Regenerate() {
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
-            Tile.Destroy(tile);
+            tile.Destroy();
          }
       }
 
@@ -303,15 +303,7 @@ class Board extends MonoBehaviour {
       for (var y = 0 ; y < size ; y++) {
          var tileRow = new List.<Tile>();
          for (var x = 0 ; x < size ; x++) {
-            var tile : Tile = Tile.Instantiate(this, x, y, numColors);
-
-            tile.transform.localScale /= size;
-            var adjust = size/2;
-
-            var xPosition = x - adjust;
-            var yPosition = y - adjust;
-            tile.transform.position += Vector3.right * (xPosition) / size * 10;
-            tile.transform.position += -Vector3.up * (yPosition) / size * 10;
+            var tile : Tile = new Tile(x, y, size, transform.rotation, numColors);
             tileRow.Add(tile);
          }
          m_tiles.Add(tileRow);
@@ -323,7 +315,7 @@ class Board extends MonoBehaviour {
       floodFrom(firstTile, firstTile.getColor());
 
       scoreController.Reset();
-      m_optimal = CalculateOptimal();
+      CalculateOptimal();
    }
 
    function HasGameStarted() {
@@ -374,6 +366,14 @@ class Board extends MonoBehaviour {
    }
 
    function CalculateOptimal() {
+      // var thread = System.Threading.Thread(CalculateOptimalHelper);
+      // thread.Start();
+   }
+
+   private function CalculateOptimalHelper() { 
+      //Set the MAX_DEPTH based on the size and number of tiles.
+      MAX_DEPTH = BASE_MAX_DEPTH - GetNumColors()/3 - GetSize()/6;
+
       var fullSize = GetSize() * GetSize();
       var numSteps = 0;
       while (true) {
@@ -394,7 +394,8 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
-      return numSteps;
+      m_optimal = numSteps;
+      Debug.Log(m_optimal);
    }
 
    function CalculateHint() {
@@ -404,6 +405,7 @@ class Board extends MonoBehaviour {
       return hintNode;
    }
 
+   static var BASE_MAX_DEPTH = 7;
    static var MAX_DEPTH = 3;
    function CalculateHint(currentDepth : int) : HintNode {
       var numFloodedTiles = m_floodedTiles.Count;
