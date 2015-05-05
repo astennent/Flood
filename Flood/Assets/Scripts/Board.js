@@ -238,7 +238,9 @@ class Board extends MonoBehaviour {
       } 
 
       m_undoStack.RemoveLast();
-      scoreController.Decrement();
+      if (!m_hinting) {
+         scoreController.Decrement();
+      }
    }
 
    function LoadZen() {
