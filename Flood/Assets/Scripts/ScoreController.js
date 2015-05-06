@@ -7,6 +7,8 @@ public var board : Board;
 public var bestText : TextMesh;
 public var currentText : TextMesh;
 
+public var gameStars : List.<GameStar>;
+
 private static var DEFAULT_BEST = 99999;
 
 var recordClearedText : ClearedText;
@@ -25,11 +27,20 @@ function Reset() {
    s_currentMoves = 0;
    UpdateBestText();
    UpdateCurrentMovesText();
+   UpdateGameStars();
    clickAnywhereText.Hide();
 }
 
 private function UpdateBestText() {
    setText(bestText, GetBestScore());
+}
+
+private function UpdateGameStars() {
+   var level = board.GetLevel();
+   var numStars = GetBestStars(level);
+   for (var gameStar in gameStars) {
+      gameStar.UpdateForNumStars(level, numStars);
+   }
 }
 
 private function UpdateCurrentMovesText() {
@@ -58,6 +69,7 @@ function Finish() {
    if (s_currentMoves < GetBestScore()) {
       recordClearedText.Display();
       SetBestScore();
+      UpdateGameStars();
    } else {
       nonRecordClearedText.Display();
    }
@@ -70,6 +82,7 @@ function Finish() {
    }
 
    clickAnywhereText.Display();
+   UpdateGameStars();
 }
 
 private static function calculateEarnedStars(moves : int, optimal : int) {
