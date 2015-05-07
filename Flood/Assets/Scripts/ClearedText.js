@@ -18,7 +18,7 @@ function Display() {
    GetComponent.<Renderer>().enabled = true;
    displayTime = Time.time;
    if (isClickAnywhere) {
-      transform.position.y = 1;
+      transform.position.y = 0;
       GetComponent.<Renderer>().material.color.a = 0;
    } else {
       transform.position.y = -3;
