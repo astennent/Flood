@@ -11,7 +11,7 @@ var canvas : Canvas;
 
 var starsImages : UnityEngine.Sprite[];
 
-private var m_selectedPack : LevelPack;
+private static var m_selectedPack : LevelPack;
 
 static var tilesPerRow = 5; 
 static var tilesPerPage = 35;
@@ -24,13 +24,11 @@ function Start() {
 }
 
 function LoadLevelPacks() {
-
    var index = 0;
    for (var levelPack in LevelDB.Packs) {
       LoadPack(levelPack, index);
       ++index;
    }
-
 }
 
 private var pageSetTime = 0;
@@ -135,4 +133,9 @@ private function DrawLevelButton(levelButton : LevelButton) {
    } 
 
    levelButton.gameObject.SetActive( (level != null) );
+}
+
+static function GetLevelAfter(level : Level) {
+   // TODO: Actually go searching for the level. (Not necessary as of the time of writing this)
+   return m_selectedPack.GetLevel(level.id);
 }

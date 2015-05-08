@@ -26,7 +26,7 @@ class Board extends MonoBehaviour {
    public var m_guiSkin : GUISkin;
 
    // Used for maintaining randomness for Zen mode.
-   private var zenSeed : int;
+   private var oldZenSeed : int;
 
    // Each entry is a list of tiles that were flooded each turn.
    private var m_undoStack = new LinkedList.<UndoNode>() ;
@@ -37,7 +37,11 @@ class Board extends MonoBehaviour {
 
    public var optimalText : TextMesh;
 
+   private static var LARGE_NUMBER = 9999999999;
 
+   function IsZen() {
+      return (m_level == null);
+   }
    function GetLevel() {
       return m_level;
    }
@@ -95,7 +99,6 @@ class Board extends MonoBehaviour {
          return;
       }
       s_mainBoard = this;
-      zenSeed = Random.value * Mathf.Infinity;
       m_size = 15;
       m_numColors = 5;
       scoreController = GetComponent.<ScoreController>();
@@ -153,7 +156,6 @@ class Board extends MonoBehaviour {
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
       // Reset the game.
       if (HasGameEnded()) {
-         Regenerate();
          return;
       }
 
@@ -205,6 +207,8 @@ class Board extends MonoBehaviour {
       if (!isOriginal) {
          Destroy(gameObject);
       }
+
+      var iterator = Random.value;
    }
 
    function Undo() {
@@ -254,12 +258,6 @@ class Board extends MonoBehaviour {
    }
 
    function LoadLevel(level : Level) {
-      if (!m_level && level) { // Zen to ~Zen
-         zenSeed = Random.value;
-      } else if (m_level && !level) { //~Zen to Zen
-         Random.seed = zenSeed;
-      }
-
       if (m_level != level) {
          m_level = level;
          Regenerate();
@@ -298,7 +296,29 @@ class Board extends MonoBehaviour {
       RefreshNumColorButtons();
    }
 
+   function Replay() {
+      Regenerate(true);
+   }
+
+   function NextLevel() {
+      if (IsZen()) {
+         Regenerate();
+      } else {
+         var nextLevel = LevelPackController.GetLevelAfter(m_level);
+         if (nextLevel) {
+            LoadLevel(nextLevel);
+         } else {
+            MenuController.SwitchToSelectedPack();
+         }
+      }
+   }
+
    function Regenerate() {
+      Regenerate(false);
+   }
+
+   private function Regenerate(useOldZenSeed : boolean) {
+
       for (var tileRow in m_tiles) {
          for (var tile in tileRow) {
             tile.Destroy();
@@ -316,6 +336,11 @@ class Board extends MonoBehaviour {
 
       if (m_level) {
          Random.seed = m_level.seed;
+      } else {
+         if (!useOldZenSeed) {
+            oldZenSeed = Random.value * LARGE_NUMBER;
+         }
+         Random.seed = oldZenSeed;
       }
 
       var size = GetSize();

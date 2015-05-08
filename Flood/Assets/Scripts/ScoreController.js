@@ -13,7 +13,6 @@ private static var DEFAULT_BEST = 99999;
 
 var recordClearedText : ClearedText;
 var nonRecordClearedText : ClearedText;
-var clickAnywhereText : ClearedText;
 
 function Start() {
    s_instance = this;
@@ -28,7 +27,7 @@ function Reset() {
    UpdateBestText();
    UpdateCurrentMovesText();
    UpdateGameStars();
-   clickAnywhereText.Hide();
+   EndGameButton.Hide();
 }
 
 private function UpdateBestText() {
@@ -73,15 +72,17 @@ function Finish() {
    } else {
       nonRecordClearedText.Display();
    }
+   var level = board.GetLevel();
+   
+   var isZen = (level == null);
+   EndGameButton.Display(isZen);
 
-
-   var oldStars = GetBestStars(board.GetLevel());
+   var oldStars = GetBestStars(level);
    var earnedStars = calculateEarnedStars(s_currentMoves, board.GetCurrentOptimal());
    if (earnedStars > oldStars) {
       SetBestStars(earnedStars);
    }
 
-   clickAnywhereText.Display();
    UpdateGameStars();
 }
 

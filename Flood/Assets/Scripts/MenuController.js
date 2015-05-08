@@ -54,14 +54,13 @@ function OnBackButtonPressed() {
       break;
       case MENU_GAME:
          if (s_instance.board.GetLevel()) {
-            s_instance.GetComponent.<LevelPackController>().RefreshLevelButtons();
-            SetMenu(MENU_SELECTED_PACK);
+            SwitchToSelectedPack();
          } else {
             SetMenu(MENU_MAIN);
          }
       break;
       case MENU_CONFIRM:
-         SetMenu(MENU_GAME);
+         SwitchToGame();
       break;
    }
 }
@@ -98,6 +97,11 @@ static function SwitchToGame() {
 
 static function SwitchToConfirm() {
    s_instance.SetMenu(MENU_CONFIRM);
+}
+
+static function SwitchToSelectedPack() {
+   s_instance.GetComponent.<LevelPackController>().RefreshLevelButtons();
+   s_instance.SetMenu(MENU_SELECTED_PACK);
 }
 
 static function IsOnGame() {
