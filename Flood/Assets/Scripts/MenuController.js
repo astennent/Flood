@@ -65,7 +65,7 @@ function OnBackButtonPressed() {
    }
 }
 
-function SetMenu(menuIndex : int) {
+private function SetMenu(menuIndex : int) {
    s_instance.m_menus[s_instance.m_currentMenuIndex].gameObject.SetActive(false);
    s_instance.m_currentMenuIndex = menuIndex;
    var menu = s_instance.m_menus[menuIndex];
@@ -74,7 +74,7 @@ function SetMenu(menuIndex : int) {
 
 function OnClickZen() {
    s_instance.board.LoadZen();
-   s_instance.SetMenu(MENU_GAME);
+   SwitchToGame();
 }
 
 function OnClickLevelPack(levelPackButton : LevelPackButton) {
@@ -84,7 +84,7 @@ function OnClickLevelPack(levelPackButton : LevelPackButton) {
 
 function OnClickLevel(levelButton : LevelButton) {
    s_instance.board.LoadLevel(levelButton.level);
-   s_instance.SetMenu(MENU_GAME);
+   SwitchToGame();
 }
 
 static function IsOnSelectedPack() {

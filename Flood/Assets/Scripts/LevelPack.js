@@ -14,7 +14,7 @@ class LevelPack {
       this.count = levels.length;
 
       for (var i = 1 ; i <= count ; ++i) {
-         this.levels[i-1] = new Level(i, seedOffset);
+         this.levels[i-1] = new Level(i, seedOffset, title);
       }
    }
 

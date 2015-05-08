@@ -36,6 +36,8 @@ class Board extends MonoBehaviour {
    private static var s_mainBoard : Board;
 
    public var optimalText : TextMesh;
+   public var gameTitle : UnityEngine.UI.Text;
+
 
    private static var LARGE_NUMBER = 9999999999;
 
@@ -264,6 +266,7 @@ class Board extends MonoBehaviour {
          ActivateTileButtons(level == null);
          RefreshNumColorButtons();
       }
+      gameTitle.text = (m_level) ? m_level.GetTitle() : "";
    }
 
 
