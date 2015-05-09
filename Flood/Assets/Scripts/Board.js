@@ -38,7 +38,7 @@ class Board extends MonoBehaviour {
    public var optimalText : TextMesh;
    public var gameTitle : UnityEngine.UI.Text;
 
-   private static var LARGE_NUMBER = 9999999999;
+   private static var LARGE_NUMBER = 9999999;
 
    function IsZen() {
       return (m_level == null);
