@@ -38,7 +38,6 @@ class Board extends MonoBehaviour {
    public var optimalText : TextMesh;
    public var gameTitle : UnityEngine.UI.Text;
 
-
    private static var LARGE_NUMBER = 9999999999;
 
    function IsZen() {
@@ -73,7 +72,6 @@ class Board extends MonoBehaviour {
    }
 
    function Prompt(callbackFunction : Function, param : int) {
-
       // Don't process anything if you clicked through a menu.
       if (!MenuController.IsOnGame()) {
          return;
@@ -114,37 +112,43 @@ class Board extends MonoBehaviour {
       return null;
    }
 
-   // Returns true if this tile is surrounded by flooded neighbors.
-   private function floodFrom(tile : Tile, targetColor : int) {
+   var s_floodFromCount = 0;
+   // 5 colors, second highest board count: Approx 225k, 900k
+   private function floodFrom(tile : Tile) {
+      s_floodFromCount++;
+      
+      if (!m_floodedTiles.Contains(tile)) {
+         m_floodedTiles.Add(tile);
+         m_undoStack.Last.Value.newlyFlooded.Add(tile);
+      }
+
       var x = tile.x();
       var y = tile.y();
-      var allNeighborsFlooded = floodNeighbor(tile, GetTile(y-1, x), targetColor);
-      allNeighborsFlooded = floodNeighbor(tile, GetTile(y+1, x), targetColor) && allNeighborsFlooded;
-      allNeighborsFlooded = floodNeighbor(tile, GetTile(y, x-1), targetColor) && allNeighborsFlooded;
-      allNeighborsFlooded = floodNeighbor(tile, GetTile(y, x+1), targetColor) && allNeighborsFlooded;
-      if (allNeighborsFlooded) {
-         m_borderTiles.Remove(tile);
-      }
-   }
+      var neighbors = [
+         GetTile(y-1, x),
+         GetTile(y+1, x),
+         GetTile(y, x-1),
+         GetTile(y, x+1)
+      ];
 
-   // Helper for ProcessClick.
-   // Returns false if the neighbor remains unflooded after execution.
-   private function floodNeighbor(tile : Tile, neighbor : Tile, targetColor : int) {
-      if (!neighbor || m_floodedTiles.Contains(neighbor)) {
-         return true;
-      }
-
-      if (neighbor.getColor() == targetColor) {
-         if (m_undoStack.Count > 0) {
-            m_undoStack.Last.Value.tiles.Add(neighbor);
+      for (var neighbor in neighbors) {
+         if (!neighbor || m_floodedTiles.Contains(neighbor)) {
+            continue;
          }
-         m_floodedTiles.Add(neighbor);
-         m_borderTiles.Add(neighbor);
-         floodFrom(neighbor, targetColor);
-         return true;
+
+         if (neighbor.getColor() == tile.getColor()) {
+            floodFrom(neighbor);
+         } else if (!m_borderTiles.Contains(neighbor)) {
+            m_borderTiles.Add(neighbor);
+            m_undoStack.Last.Value.newlyBorder.Add(neighbor);
+         }
       }
 
-      return false;
+      if (m_borderTiles.Contains(tile)) {
+         m_borderTiles.Remove(tile);
+         m_undoStack.Last.Value.newlyNonBorder.Add(tile);
+      }
+
    }
 
    function ProcessClick(tileX : int, tileY : int) {
@@ -165,7 +169,9 @@ class Board extends MonoBehaviour {
       var oldFloodedCount = m_floodedTiles.Count;
       var oldBorderTiles = new List.<Tile>(m_borderTiles);
       for (var tile in oldBorderTiles) {
-         floodFrom(tile, targetColor);
+         if (tile.getColor() == targetColor) {
+            floodFrom(tile);
+         }
       }
 
       var origin : Vector2 = new Vector2(tileX, tileY);
@@ -183,7 +189,7 @@ class Board extends MonoBehaviour {
 
       if (m_floodedTiles.Count > oldFloodedCount) {
          scoreController.Increment();
-      } else {
+      } else if (m_undoStack.Count > 1) {
          m_undoStack.RemoveLast();
       }
 
@@ -214,36 +220,24 @@ class Board extends MonoBehaviour {
    }
 
    function Undo() {
-      if (m_undoStack.Count == 0) {
+      if (m_undoStack.Count <= 1) {
          return; // Nothing to undo.
       }
 
       var lastUndoNode = m_undoStack.Last.Value;
-      var toRevert = lastUndoNode.tiles;
 
-      for (var revertedTile in toRevert) {
-         revertedTile.revert();
-         m_floodedTiles.Remove(revertedTile);
-         m_borderTiles.Remove(revertedTile);
+      for (var newlyFloodedTile in lastUndoNode.newlyFlooded) {
+         newlyFloodedTile.revert();
+         m_floodedTiles.Remove(newlyFloodedTile);
+      }
+      
+      for (var newlyNonBorderTile in lastUndoNode.newlyNonBorder) {
+         m_borderTiles.Add(newlyNonBorderTile);
       }
 
-      for (revertedTile in toRevert) {
-         var x = revertedTile.x();
-         var y = revertedTile.y();
-
-         var neighbor = GetTile(y-1, x);
-         if (neighbor && m_floodedTiles.Contains(neighbor))
-            m_borderTiles.Add(neighbor);
-         neighbor = GetTile(y+1, x);
-         if (neighbor && m_floodedTiles.Contains(neighbor))
-            m_borderTiles.Add(neighbor);
-         neighbor = GetTile(y, x-1);
-         if (neighbor && m_floodedTiles.Contains(neighbor))
-            m_borderTiles.Add(neighbor);
-         neighbor = GetTile(y, x+1);
-         if (neighbor && m_floodedTiles.Contains(neighbor))
-            m_borderTiles.Add(neighbor);
-      }     
+      for (var newlyBorderTile in lastUndoNode.newlyBorder) {
+         m_borderTiles.Remove(newlyBorderTile);
+      }
 
       for (var tile in m_floodedTiles) {
          tile.setColor(lastUndoNode.color, new Vector2(tile.x(), tile.y()));
@@ -379,9 +373,9 @@ class Board extends MonoBehaviour {
 
    function DoInitialFlood() {
       var firstTile = m_tiles[0][0];
-      m_floodedTiles.Add(firstTile);
+      m_undoStack.AddLast(new UndoNode(firstTile.getColor()));
       m_borderTiles.Add(firstTile);
-      floodFrom(firstTile, firstTile.getColor());
+      floodFrom(firstTile);
    }
 
 //////////////////////////////
@@ -442,6 +436,7 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
+      Debug.Log(s_floodFromCount);
       s_mainBoard.SetOptimal(this, numSteps);
    }
 
@@ -504,7 +499,9 @@ class HintNode {
 }
 
 class UndoNode {
-   var tiles = new List.<Tile>();
+   var newlyFlooded = new List.<Tile>();
+   var newlyBorder = new List.<Tile>();
+   var newlyNonBorder = new List.<Tile>();
    var color : int = -1;
 
    function UndoNode(color : int) {
