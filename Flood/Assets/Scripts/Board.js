@@ -112,11 +112,7 @@ class Board extends MonoBehaviour {
       return null;
    }
 
-   var s_floodFromCount = 0;
-   // 5 colors, second highest board count: Approx 225k, 900k
    private function floodFrom(tile : Tile) {
-      s_floodFromCount++;
-      
       if (!m_floodedTiles.Contains(tile)) {
          m_floodedTiles.Add(tile);
          m_undoStack.Last.Value.newlyFlooded.Add(tile);
@@ -161,7 +157,7 @@ class Board extends MonoBehaviour {
 
    function ProcessClick(tileX : int, tileY : int, targetColor : int) {
       // Reset the game.
-      if (HasGameEnded()) {
+      if (HasGameEnded() || (isOriginal && !MenuController.IsOnGame())) {
          return;
       }
 
@@ -381,7 +377,9 @@ class Board extends MonoBehaviour {
 //////////////////////////////
 
    function SetOptimal(cloneBoard : Board, numSteps : int) {
+      Debug.Log("Setting " + numSteps);
       if (cloneBoard == m_officialClone) {
+         Debug.Log("Actually sztting " + numSteps);
          m_optimal = numSteps;
       }
    }
@@ -414,7 +412,7 @@ class Board extends MonoBehaviour {
 
    private function CalculateOptimalHelper() { 
       //Set the MAX_DEPTH based on the size and number of tiles.
-      MAX_DEPTH = BASE_MAX_DEPTH - GetNumColors()/3 - GetSize()/6;
+      MAX_DEPTH = BASE_MAX_DEPTH - GetNumColors()/3 - GetSize()/8;
 
       var fullSize = GetSize() * GetSize();
       var numSteps = 0;
@@ -436,7 +434,6 @@ class Board extends MonoBehaviour {
       }
 
       m_hinting = false;
-      Debug.Log(s_floodFromCount);
       s_mainBoard.SetOptimal(this, numSteps);
    }
 

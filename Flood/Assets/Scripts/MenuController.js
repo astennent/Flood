@@ -15,6 +15,9 @@ static var MENU_GAME = 5;
 static var MENU_CONFIRM = 6;
 var m_menus : UnityEngine.UI.Image[];
 
+public var m_confirmResetScoresButton : UnityEngine.UI.Button;
+public var m_resetScoresText : UnityEngine.UI.Text;
+
 private var m_currentMenuIndex : int;
 private var m_selectedPack : LevelPack;
 
@@ -41,22 +44,22 @@ function OnBackButtonPressed() {
          Application.Quit();
       break;
       case MENU_LEVEL_PACKS:
-         SetMenu(MENU_MAIN);
+         SwitchToMain();
       break;
       case MENU_SELECTED_PACK:
-         SetMenu(MENU_LEVEL_PACKS);
+         SwitchToLevelPacks();
       break;
       case MENU_SETTINGS:
-         SetMenu(MENU_MAIN);
+         SwitchToMain();
       break;
       case MENU_ABOUT:
-         SetMenu(MENU_MAIN);
+         SwitchToMain();
       break;
       case MENU_GAME:
          if (s_instance.board.GetLevel()) {
             SwitchToSelectedPack();
          } else {
-            SetMenu(MENU_MAIN);
+            SwitchToMain();
          }
       break;
       case MENU_CONFIRM:
@@ -70,6 +73,9 @@ private function SetMenu(menuIndex : int) {
    s_instance.m_currentMenuIndex = menuIndex;
    var menu = s_instance.m_menus[menuIndex];
    menu.gameObject.SetActive(true);
+
+
+   HideScoresResetConfirmation();
 }
 
 function OnClickZen() {
@@ -87,6 +93,22 @@ function OnClickLevel(levelButton : LevelButton) {
    SwitchToGame();
 }
 
+function ToggleScoresResetConfirmation() {
+   if (m_confirmResetScoresButton.gameObject.activeInHierarchy) {
+      HideScoresResetConfirmation();
+   } else {
+      m_resetScoresText.text = "Wait, nevermind!";
+      m_resetScoresText.color = new Color(0, .5, 0);
+      m_confirmResetScoresButton.gameObject.SetActive(true);
+   }
+
+}
+function HideScoresResetConfirmation() {
+   m_resetScoresText.text = "Reset Progress";
+   m_resetScoresText.color = new Color(.5, 0, 0);
+   m_confirmResetScoresButton.gameObject.SetActive(false);
+}
+
 static function IsOnSelectedPack() {
    return (s_instance.m_currentMenuIndex == MENU_SELECTED_PACK);
 }
@@ -102,6 +124,15 @@ static function SwitchToConfirm() {
 static function SwitchToSelectedPack() {
    s_instance.GetComponent.<LevelPackController>().RefreshLevelButtons();
    s_instance.SetMenu(MENU_SELECTED_PACK);
+}
+
+static function SwitchToLevelPacks() {
+   s_instance.GetComponent.<LevelPackController>().RefreshLevelPackButtonCompletion();
+   s_instance.SetMenu(MENU_LEVEL_PACKS);
+}
+
+static function SwitchToMain() {
+   s_instance.SetMenu(MENU_MAIN);   
 }
 
 static function IsOnGame() {

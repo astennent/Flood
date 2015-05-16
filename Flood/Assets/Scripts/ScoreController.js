@@ -149,3 +149,7 @@ private function SetBestStars(earnedStars : int) {
    var key = getStarsKey(level);
    PlayerPrefs.SetInt(key, earnedStars);
 }
+
+function ResetAllScores() {
+   PlayerPrefs.DeleteAll();
+}

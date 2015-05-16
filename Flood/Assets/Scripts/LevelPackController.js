@@ -29,6 +29,7 @@ function LoadLevelPacks() {
       LoadPack(levelPack, index);
       ++index;
    }
+   RefreshLevelPackButtonCompletion();
 }
 
 private var pageSetTime = 0;
@@ -79,7 +80,6 @@ private function SetPage(page : int) {
 
 function LoadPack(levelPack : LevelPack, index : int) {
    var buttonInstance = GameObject.Instantiate(levelPackButtonPrefab).GetComponent.<LevelPackButton>();
-
    buttonInstance.transform.SetParent(levelPackContent);
    
    var rectTransform = buttonInstance.GetComponent.<RectTransform>();
@@ -89,12 +89,19 @@ function LoadPack(levelPack : LevelPack, index : int) {
 
    buttonInstance.title.text = levelPack.title;
    buttonInstance.description.text = levelPack.description;
-   buttonInstance.completion.text = levelPack.CountStars() + " / " + levelPack.count*4;
 
    buttonInstance.levelPack = levelPack;
 
    var scrollingTransform = levelPackContent.GetComponent.<RectTransform>();
    scrollingTransform.sizeDelta = new Vector2(scrollingTransform.rect.width, rectTransform.rect.height * LevelDB.Packs.length);
+}
+
+function RefreshLevelPackButtonCompletion() {
+   for (var buttonTransform : Transform in levelPackContent.transform) {
+      var buttonInstance = buttonTransform.GetComponent.<LevelPackButton>();
+      var levelPack = buttonInstance.levelPack;
+      buttonInstance.completion.text = levelPack.CountStars() + " / " + levelPack.count*4;
+   }
 }
 
 // TODO: This is just to make sure the stars images are refreshed when pressing back.

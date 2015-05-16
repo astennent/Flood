@@ -16,6 +16,7 @@ function Start() {
    var savedThemeIndex = PlayerPrefs.GetInt(THEME_KEY);
    var defaultTheme = themes[savedThemeIndex];
    RefreshColorMaterials(defaultTheme.colors, defaultTheme.material);
+   UpdateThemeButtonSelection();
 }
 
 static function RefreshColorMaterials(colors : Color[], material : Material) {
@@ -30,11 +31,18 @@ public function SetColors(themeButton : ThemeButton) {
    for (var i = 0 ; i < themes.length ; ++i) {
       if (themeButton == themes[i]) {
          PlayerPrefs.SetInt(THEME_KEY, i);
-         break;
-      }
+      } 
    }
    RefreshColorMaterials(themeButton.colors, themeButton.material);
    board.OnThemeChange();
+   UpdateThemeButtonSelection();
+}
+
+private function UpdateThemeButtonSelection() {
+   var theme_key = PlayerPrefs.GetInt(THEME_KEY);
+   for (var i = 0 ; i < themes.length ; ++i) {
+      themes[i].SetSelected(theme_key == i);
+   }
 }
 
 static function GetStarColor(numColors : int) {
