@@ -38,10 +38,14 @@ function Update() {
    }
 }
 
+function Quit() {
+   Application.Quit();
+}
+
 function OnBackButtonPressed() {
    switch(m_currentMenuIndex) {
       case MENU_MAIN:
-         Application.Quit();
+         SwitchToGame(); // This is the only way to get back to a level.
       break;
       case MENU_LEVEL_PACKS:
          SwitchToMain();
