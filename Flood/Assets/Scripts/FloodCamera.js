@@ -4,7 +4,7 @@ var myCamera : Camera;
 
 function Start () {
    myCamera = GetComponent.<Camera>();
-   var p1 = new Vector3(-5.5, -8, 0);
+   var p1 = new Vector3(-5.5, -8.2, 0);
    var p2 = new Vector3(5.5, 8, 0);
 
    var precision = 0.01;
